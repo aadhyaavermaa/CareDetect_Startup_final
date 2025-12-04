@@ -183,6 +183,161 @@ function CustomCheckbox({ label, checked, onChange, className = '' }) {
 }
 
 export default function BreastCancerLandingPage() {
+    // Risk Assessment Modal placeholder
+    const RiskAssessmentModal = () => {
+      const [form, setForm] = useState({
+        menarche: '',
+        menopause: '',
+        menopauseAge: '',
+        pregnant: '',
+        firstChildAge: '',
+        parity: '',
+        breastfeeding: '',
+        bfDuration: '',
+        birthControl: '',
+        hrt: '',
+        familyHistory: '',
+        familyCancerAge: '',
+        personalHistory: '',
+      });
+      const [result, setResult] = useState(null);
+
+      function handleChange(e) {
+        const { name, value } = e.target;
+        setForm(f => ({ ...f, [name]: value }));
+      }
+
+      function handleSubmit(e) {
+        e.preventDefault();
+        // Risk logic
+        let risk = 'Average/Lower Risk';
+        let score = 0;
+        // Early menarche
+        if (form.menarche === '<12') score++;
+        // Late menopause
+        if (form.menopause === 'Yes' && form.menopauseAge && Number(form.menopauseAge) > 55) score++;
+        // No pregnancy or first child after 30
+        if (form.pregnant === 'No') score++;
+        if (form.pregnant === 'Yes' && form.firstChildAge && Number(form.firstChildAge) > 30) score++;
+        // Low parity
+        if (form.parity && Number(form.parity) < 2) score++;
+        // Breastfeeding <6 months
+        if (form.breastfeeding === 'No') score++;
+        if (form.breastfeeding === 'Yes' && form.bfDuration && Number(form.bfDuration) < 6) score++;
+        // Long-term birth control/hormones
+        if (form.birthControl === 'Yes') score++;
+        if (form.hrt === 'Yes') score++;
+        // Family history
+        if (form.familyHistory === 'Yes') score += 2;
+        // Personal history
+        if (form.personalHistory === 'Yes') score += 2;
+        if (score >= 4) risk = 'Higher Risk';
+        setResult(risk);
+      }
+
+      if (!showRiskModal) return null;
+      return (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40" style={{overflowY: 'auto'}} onClick={() => setShowRiskModal(false)}>
+          <div className="backdrop-blur-2xl bg-white border border-pink-200 rounded-3xl shadow-2xl p-0 w-full max-w-2xl flex flex-col items-center animate-fade-in relative mt-16" style={{maxHeight: '90vh', overflowY: 'auto'}} onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowRiskModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-pink-500 text-2xl font-bold">&times;</button>
+            <div className="p-10 w-full flex flex-col items-center">
+              <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600 mb-8 font-lexend tracking-tight drop-shadow-lg text-center">Risk Assessment</h2>
+              <form className="w-full max-w-xl space-y-7" onSubmit={handleSubmit}>
+                {/* Menstrual history */}
+                <div>
+                  <label className="font-semibold text-lg text-gray-800 mb-2 block">Age at first period (menarche):</label>
+                  <select name="menarche" value={form.menarche} onChange={handleChange} className="w-full mt-1 rounded-xl border-2 border-pink-300 px-4 py-3 text-base focus:ring-2 focus:ring-pink-400">
+                    <option value="">Select</option>
+                    <option value="<12">Less than 12</option>
+                    <option value="12-14">12-14</option>
+                    <option value=">14">Above 14</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="font-semibold text-lg text-gray-800 mb-2 block">Are periods regular or has menopause occurred?</label>
+                  <select name="menopause" value={form.menopause} onChange={handleChange} className="w-full mt-1 rounded-xl border-2 border-pink-300 px-4 py-3 text-base focus:ring-2 focus:ring-pink-400">
+                    <option value="">Select</option>
+                    <option value="No">Regular</option>
+                    <option value="Yes">Menopause</option>
+                  </select>
+                  {form.menopause === 'Yes' && (
+                    <input type="number" name="menopauseAge" value={form.menopauseAge} onChange={handleChange} placeholder="Age at menopause" className="w-full mt-2 rounded-xl border-2 border-pink-300 px-4 py-3 text-base" />
+                  )}
+                </div>
+                {/* Pregnancy & childbirth */}
+                <div>
+                  <label className="font-semibold text-lg text-gray-800 mb-2 block">Have you ever been pregnant?</label>
+                  <select name="pregnant" value={form.pregnant} onChange={handleChange} className="w-full mt-1 rounded-xl border-2 border-pink-300 px-4 py-3 text-base focus:ring-2 focus:ring-pink-400">
+                    <option value="">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                  {form.pregnant === 'Yes' && (
+                    <>
+                      <input type="number" name="firstChildAge" value={form.firstChildAge} onChange={handleChange} placeholder="Age at first child" className="w-full mt-2 rounded-xl border-2 border-pink-300 px-4 py-3 text-base" />
+                      <input type="number" name="parity" value={form.parity} onChange={handleChange} placeholder="Number of full-term children" className="w-full mt-2 rounded-xl border-2 border-pink-300 px-4 py-3 text-base" />
+                    </>
+                  )}
+                </div>
+                {/* Breastfeeding */}
+                <div>
+                  <label className="font-semibold text-lg text-gray-800 mb-2 block">Did you breastfeed your children?</label>
+                  <select name="breastfeeding" value={form.breastfeeding} onChange={handleChange} className="w-full mt-1 rounded-xl border-2 border-pink-300 px-4 py-3 text-base focus:ring-2 focus:ring-pink-400">
+                    <option value="">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                  {form.breastfeeding === 'Yes' && (
+                    <input type="number" name="bfDuration" value={form.bfDuration} onChange={handleChange} placeholder="Duration (months)" className="w-full mt-2 rounded-xl border-2 border-pink-300 px-4 py-3 text-base" />
+                  )}
+                </div>
+                {/* Hormonal medicines */}
+                <div>
+                  <label className="font-semibold text-lg text-gray-800 mb-2 block">Long-term birth control pills or hormonal injection/implant?</label>
+                  <select name="birthControl" value={form.birthControl} onChange={handleChange} className="w-full mt-1 rounded-xl border-2 border-pink-300 px-4 py-3 text-base focus:ring-2 focus:ring-pink-400">
+                    <option value="">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="font-semibold text-lg text-gray-800 mb-2 block">Hormone replacement therapy (HRT) after menopause?</label>
+                  <select name="hrt" value={form.hrt} onChange={handleChange} className="w-full mt-1 rounded-xl border-2 border-pink-300 px-4 py-3 text-base focus:ring-2 focus:ring-pink-400">
+                    <option value="">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
+                {/* Family & personal history */}
+                <div>
+                  <label className="font-semibold text-lg text-gray-800 mb-2 block">Any close relative (mother, sister, daughter) with breast or ovarian cancer?</label>
+                  <select name="familyHistory" value={form.familyHistory} onChange={handleChange} className="w-full mt-1 rounded-xl border-2 border-pink-300 px-4 py-3 text-base focus:ring-2 focus:ring-pink-400">
+                    <option value="">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                  {form.familyHistory === 'Yes' && (
+                    <input type="number" name="familyCancerAge" value={form.familyCancerAge} onChange={handleChange} placeholder="Relative's age at diagnosis" className="w-full mt-2 rounded-xl border-2 border-pink-300 px-4 py-3 text-base" />
+                  )}
+                </div>
+                <div>
+                  <label className="font-semibold text-lg text-gray-800 mb-2 block">Have you ever been diagnosed with breast cancer or any other breast tumor?</label>
+                  <select name="personalHistory" value={form.personalHistory} onChange={handleChange} className="w-full mt-1 rounded-xl border-2 border-pink-300 px-4 py-3 text-base focus:ring-2 focus:ring-pink-400">
+                    <option value="">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
+                <button type="submit" className="w-full py-4 rounded-xl font-bold text-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg hover:scale-105 mt-6">Analyze Risk</button>
+              </form>
+              {result && (
+                <div className="mt-8 text-2xl font-bold text-pink-600 text-center">Your Risk Category: <span className="text-purple-600">{result}</span></div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    };
   const [isVisible, setIsVisible] = useState(false);
   const [showSweatDetection, setShowSweatDetection] = useState(false);
   const [showDoctorModel, setShowDoctorModel] = useState(false);
@@ -192,6 +347,7 @@ export default function BreastCancerLandingPage() {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(null); // null = not showing
+  const [showRiskModal, setShowRiskModal] = useState(false);
 
   // Listen controls state
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -323,6 +479,7 @@ export default function BreastCancerLandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 font-sans">
+      <RiskAssessmentModal />
       {/* Header */}
       <header className="bg-white/60 backdrop-blur-md border-b border-pink-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -352,6 +509,13 @@ export default function BreastCancerLandingPage() {
                 onClick={handleOpenDashboard}
               >
                 Genetic Risk
+              </button>
+              <button
+                id="risk-assessment-btn"
+                className="text-gray-700 hover:text-pink-600 transition-colors focus:outline-none font-semibold border border-pink-200 rounded-full px-4 py-1 ml-2 bg-white/70 hover:bg-pink-100"
+                onClick={() => setShowRiskModal(true)}
+              >
+                Risk Assessment
               </button>
             </nav>
             {/* Desktop Auth Buttons */}
