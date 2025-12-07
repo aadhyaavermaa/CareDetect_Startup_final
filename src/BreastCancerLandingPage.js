@@ -9,8 +9,6 @@ import SweatBiomarkerDetection from './SweatBiomarkerDetection';
 import Login from './components/auth/Login';
 import SignUp from './components/auth/SignUp';
 import OnboardingOverlay from "./components/OnboardingOverlay";
-import getBreastCancerRiskLevel from './utils/breastCancerRiskLevel';
-import GeneticRiskForm from './components/breastcancer/GeneticRiskForm';
 
 export default function BreastCancerLandingPage() {
 
@@ -22,7 +20,6 @@ export default function BreastCancerLandingPage() {
   const [showTermsModal, setShowTermsModal] = useState(false);
 
   const [showFamilyDashboard, setShowFamilyDashboard] = useState(false);
-  const [showGeneticRiskForm, setShowGeneticRiskForm] = useState(false);
 
   const [isVisible, setIsVisible] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -33,32 +30,6 @@ export default function BreastCancerLandingPage() {
   const [isPaused, setIsPaused] = useState(false);
 
   const [onboardingStep, setOnboardingStep] = useState(null);
-  const [user, setUser] = useState(null);
-
-  // Check for existing user session on mount
-  useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        localStorage.removeItem('user');
-      }
-    }
-  }, []);
-
-  const handleLoginSuccess = (userData) => {
-    setUser(userData);
-  };
-
-  const handleSignUpSuccess = (userData) => {
-    setUser(userData);
-  };
-
-  const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
-  };
 
   // TEXT TO SPEECH FUNCTIONS
   const handlePlay = () => {
@@ -93,136 +64,32 @@ function FamilyHealthDashboard({ open, onClose }) {
   ]);
   const [selected, setSelected] = useState(2); // Default to 'You'
 
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'genetic'
-  const [showRisk, setShowRisk] = useState(true);
-  const [geneticSubmitted, setGeneticSubmitted] = useState(false);
-  const [formErrors, setFormErrors] = useState([]);
-  const [geneticForm, setGeneticForm] = useState({
-    self: { hasBreastCancer: false, ageAtDiagnosis: '', brcaStatus: 'unknown', side: 'unknown' },
-    mother: { hasBreastCancer: false, ageAtDiagnosis: '', side: 'maternal' },
-    sister: { hasBreastCancer: false, ageAtDiagnosis: '', side: 'unknown' },
-    grandmother: { hasBreastCancer: false, ageAtDiagnosis: '', side: 'maternal' },
-    lifestyle: { smoking: false, heavyDrinking: false, unhealthyLifestyle: false }
-  });
-
-  const [riskResult, setRiskResult] = useState(() => {
-    try { 
-      const result = calculateRisk();
-      return result && typeof result === 'object' ? result : {
-        level: 'around_average',
-        labelText: 'Around average',
-        disclaimer: 'This is an educational estimate based on family history and lifestyle. It does not replace a doctor or official medical calculators.'
-      };
-    } catch (e) { 
-      return {
-        level: 'around_average',
-        labelText: 'Around average',
-        disclaimer: 'This is an educational estimate based on family history and lifestyle. It does not replace a doctor or official medical calculators.'
-      };
-    }
-  });
-
-  // Live compute risk when genetic helper form changes
-  useEffect(() => {
-    // Build relatives array expected by util
-    const relatives = ['mother','sister','grandmother','self'].map(key => {
-      const v = geneticForm[key];
-      const relation = key === 'self' ? 'self' : key;
-      return {
-        relation,
-        hasBreastCancer: !!v.hasBreastCancer,
-        ageAtDiagnosis: v.ageAtDiagnosis ? (Number(v.ageAtDiagnosis) || null) : null,
-        brcaStatus: v.brcaStatus || 'unknown',
-        side: v.side || 'unknown'
-      };
-    });
-
-    const userData = {
-      smoking: !!geneticForm.lifestyle.smoking,
-      heavyDrinking: !!geneticForm.lifestyle.heavyDrinking,
-      unhealthyLifestyle: !!geneticForm.lifestyle.unhealthyLifestyle
-    };
-
-    try {
-      const liveRisk = getBreastCancerRiskLevel(userData, relatives);
-      setRiskResult(liveRisk);
-      // ensure risk visible while viewing genetic tab
-      setShowRisk(true);
-    } catch (e) {
-      // ignore
-    }
-  }, [geneticForm]);
-
-  // Update risk when family/selected overview changes
-  useEffect(() => {
-    if (activeTab === 'overview') {
-      try { 
-        const result = calculateRisk();
-        setRiskResult(result && typeof result === 'object' ? result : {
-          level: 'around_average',
-          labelText: 'Around average',
-          disclaimer: 'This is an educational estimate based on family history and lifestyle. It does not replace a doctor or official medical calculators.'
-        });
-      } catch (e) { /* ignore */ }
-    }
-  }, [family, selected, activeTab]);
-
   // Controlled input states
   const member = family[selected];
 
   // Risk calculation logic
   function calculateRisk() {
-    // Build relatives array expected by getBreastCancerRiskLevel
-    const relatives = family.map(m => {
-      const relLower = (m.relation || '').toLowerCase();
-      let relationKey = 'aunt';
-      if (relLower.includes('mother')) relationKey = 'mother';
-      else if (relLower.includes('grandmother')) relationKey = 'grandmother';
-      else if (relLower.includes('sister')) relationKey = 'sister';
-      else if (relLower.includes('you') || relLower.includes('you')) relationKey = 'self';
-
-      return {
-        relation: relationKey,
-        hasBreastCancer: !!m.cancer,
-        ageAtDiagnosis: m.age ? (Number(m.age) || null) : null,
-        brcaStatus: m.genetic ? 'positive' : 'unknown',
-        side: relationKey === 'mother' || relationKey === 'grandmother' ? 'maternal' : 'unknown'
-      };
-    });
-
-    // Build userData from selected member when relation is 'You' (self)
-    const selfMember = family.find(m => (m.relation || '').toLowerCase().includes('you')) || {};
-    const userData = {
-      smoking: (selfMember.risk || []).includes('Smoking'),
-      heavyDrinking: (selfMember.risk || []).includes('Drinking'),
-      unhealthyLifestyle: (selfMember.risk || []).includes('Lifestyle')
-    };
-
-    // Use the rule-based risk level function
-    return getBreastCancerRiskLevel(userData, relatives);
-  }
-
-  // removed inline calculate; use state `riskLevel` updated via effects
-
-  const validateGeneticForm = (form) => {
-    const errors = [];
-    const f = form || geneticForm;
-    // self BRCA must be provided (not unknown)
-    if (!f.self || !f.self.brcaStatus || f.self.brcaStatus === 'unknown') {
-      errors.push('Please select your BRCA status.');
-    }
-    ['mother', 'sister', 'grandmother'].forEach(key => {
-      const r = f[key];
-      if (typeof r.hasBreastCancer !== 'boolean') return;
-      if (r.hasBreastCancer) {
-        if (!r.ageAtDiagnosis) errors.push(`Please enter age at diagnosis for ${key}.`);
-        if (!r.side || r.side === 'unknown') errors.push(`Please select family side for ${key}.`);
+    let risk = 12; // baseline risk %
+    let firstDegree = 0;
+    let extra = 0;
+    family.forEach((m, idx) => {
+      if (m.cancer) {
+        if (m.relation === 'Mother' || m.relation === 'Sister' || m.relation === 'You') firstDegree++;
+        else extra++;
       }
     });
-    return errors;
-  };
+    if (firstDegree > 0) risk += 20;
+    if (firstDegree > 1) risk += 10 * (firstDegree - 1);
+    if (extra > 0) risk += 5 * extra;
+    if (member.age && Number(member.age) < 50) risk += 10;
+    if (member.genetic) risk += 10;
+    if (member.risk.includes('Smoking')) risk += 5;
+    if (member.risk.includes('Drinking')) risk += 5;
+    if (member.risk.includes('Lifestyle')) risk += 5;
+    return Math.min(Math.round(risk), 99);
+  }
 
-  // submitGeneticHelper removed: we now compute risk live as geneticForm changes
+  const riskScore = calculateRisk();
 
   // Handlers
   function updateField(field, value) {
@@ -252,20 +119,6 @@ function FamilyHealthDashboard({ open, onClose }) {
     }
   }
 
-  const getRiskLabelText = (riskResult) => {
-    if (!riskResult) return 'Around average';
-    if (typeof riskResult === 'object' && riskResult.labelText) {
-      return riskResult.labelText;
-    }
-    // Fallback for old string format (backward compatibility)
-    if (typeof riskResult === 'string') {
-      if (riskResult === 'High risk – talk to a doctor') return 'High — talk to a doctor or genetic counselor';
-      if (riskResult === 'Moderately increased risk') return 'Moderately increased';
-      return 'Around average';
-    }
-    return 'Around average';
-  };
-
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
@@ -273,92 +126,31 @@ function FamilyHealthDashboard({ open, onClose }) {
         <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-pink-500 text-2xl font-bold">&times;</button>
         <div className="p-8 w-full flex flex-col items-center">
           <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600 mb-6 font-lexend tracking-tight drop-shadow-lg text-center" style={{letterSpacing: '0.03em'}}>Family Health Dashboard</h2>
-          {/* Tabs */}
-          <div className="mb-4 flex gap-3">
-            <button className={`px-4 py-2 rounded ${activeTab === 'overview' ? 'bg-pink-500 text-white' : 'bg-white border'}`} onClick={() => { setActiveTab('overview'); setShowRisk(true); setFormErrors([]); }}>Overview</button>
-            <button className={`px-4 py-2 rounded ${activeTab === 'genetic' ? 'bg-pink-500 text-white' : 'bg-white border'}`} onClick={() => { setActiveTab('genetic'); setShowRisk(true); setFormErrors([]); setGeneticSubmitted(false); }}>Genetic Risk</button>
-          </div>
-
-          {activeTab === 'overview' && (
-            <div className="w-full flex flex-col items-center mb-8">
-              <div className="flex flex-col items-center gap-3">
-                {family.map((m, idx) => (
-                  <div
-                    key={idx}
-                    className={`flex items-center gap-3 px-6 py-2 rounded-xl cursor-pointer transition-all duration-200
-                      ${selected === idx
-                        ? 'bg-gradient-to-r from-pink-100/80 to-purple-100/80 shadow-xl scale-105 ring-2 ring-pink-400/60'
-                        : 'hover:bg-pink-50 hover:scale-105 hover:shadow-lg'}
-                    `}
-                    onClick={() => setSelected(idx)}
-                    style={{ minWidth: 220 }}
+          {/* Family Tree Visualizer */}
+          <div className="w-full flex flex-col items-center mb-8">
+            <div className="flex flex-col items-center gap-3">
+              {family.map((m, idx) => (
+                <div
+                  key={idx}
+                  className={`flex items-center gap-3 px-6 py-2 rounded-xl cursor-pointer transition-all duration-200
+                    ${selected === idx
+                      ? 'bg-gradient-to-r from-pink-100/80 to-purple-100/80 shadow-xl scale-105 ring-2 ring-pink-400/60'
+                      : 'hover:bg-pink-50 hover:scale-105 hover:shadow-lg'}
+                  `}
+                  onClick={() => setSelected(idx)}
+                  style={{ minWidth: 220 }}
+                >
+                  <span className={`text-lg font-bold flex items-center gap-2 ${selected === idx ? 'text-pink-600' : 'text-gray-700'}`}
+                    style={{ letterSpacing: '0.01em' }}
                   >
-                    <span className={`text-lg font-bold flex items-center gap-2 ${selected === idx ? 'text-pink-600' : 'text-gray-700'}`}
-                      style={{ letterSpacing: '0.01em' }}
-                    >
-                      {getRelationIcon(m.relation, selected === idx)}
-                      {m.relation}
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-2 text-xs text-gray-500">Click a family member to edit their info. (Add more coming soon!)</div>
-            </div>
-          )}
-
-          {activeTab === 'genetic' && (
-            <div className="mb-8 p-4 border border-pink-100 rounded bg-white w-full max-w-md">
-              <h3 className="text-lg font-semibold mb-4 text-gray-700">Quick Family-history Helper</h3>
-              {formErrors.length > 0 && (
-                <div className="mb-3 text-sm text-red-600"><ul className="list-disc pl-5">{formErrors.map((err,i) => <li key={i}>{err}</li>)}</ul></div>
-              )}
-              {['mother','sister','grandmother','self'].map((key) => {
-                const label = key === 'self' ? 'You' : key.charAt(0).toUpperCase() + key.slice(1);
-                const rel = geneticForm[key];
-                return (
-                  <div key={key} className="mb-3">
-                    <div className="font-medium mb-1">{label}</div>
-                    <div className="flex gap-2 items-center">
-                      <select value={String(!!rel.hasBreastCancer)} onChange={(e) => setGeneticForm(prev => ({ ...prev, [key]: { ...prev[key], hasBreastCancer: e.target.value === 'true' } }))} className="p-2 border rounded">
-                        <option value="false">No</option>
-                        <option value="true">Yes</option>
-                      </select>
-                      {rel.hasBreastCancer && (
-                        <>
-                          <input type="number" min="0" placeholder="Age" value={rel.ageAtDiagnosis || ''} onChange={(e) => setGeneticForm(prev => ({ ...prev, [key]: { ...prev[key], ageAtDiagnosis: e.target.value } }))} className="p-2 border rounded w-24" />
-                          <select value={rel.side || 'unknown'} onChange={(e) => setGeneticForm(prev => ({ ...prev, [key]: { ...prev[key], side: e.target.value } }))} className="p-2 border rounded">
-                            <option value="maternal">Maternal</option>
-                            <option value="paternal">Paternal</option>
-                            <option value="unknown">Unknown</option>
-                          </select>
-                        </>
-                      )}
-                      {key === 'self' && (
-                        <select value={geneticForm.self.brcaStatus} onChange={(e) => setGeneticForm(prev => ({ ...prev, self: { ...prev.self, brcaStatus: e.target.value } }))} className="p-2 border rounded ml-2">
-                          <option value="unknown">Unknown</option>
-                          <option value="negative">Negative</option>
-                          <option value="positive">Positive</option>
-                        </select>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-
-              <div className="mb-3">
-                <div className="font-medium mb-1">Lifestyle</div>
-                <div className="flex gap-3">
-                  <label className="flex items-center gap-2"><input type="checkbox" checked={geneticForm.lifestyle.smoking} onChange={(e) => setGeneticForm(prev => ({ ...prev, lifestyle: { ...prev.lifestyle, smoking: e.target.checked } }))} /> Smoking</label>
-                  <label className="flex items-center gap-2"><input type="checkbox" checked={geneticForm.lifestyle.heavyDrinking} onChange={(e) => setGeneticForm(prev => ({ ...prev, lifestyle: { ...prev.lifestyle, heavyDrinking: e.target.checked } }))} /> Drinking</label>
-                  <label className="flex items-center gap-2"><input type="checkbox" checked={geneticForm.lifestyle.unhealthyLifestyle} onChange={(e) => setGeneticForm(prev => ({ ...prev, lifestyle: { ...prev.lifestyle, unhealthyLifestyle: e.target.checked } }))} /> Lifestyle</label>
+                    {getRelationIcon(m.relation, selected === idx)}
+                    {m.relation}
+                  </span>
                 </div>
-              </div>
-
-              <div className="flex gap-3">
-                <button className="px-4 py-2 bg-white border rounded" onClick={() => { setActiveTab('overview'); setShowRisk(true); setFormErrors([]); setGeneticSubmitted(false); }}>Close</button>
-              </div>
+              ))}
             </div>
-          )}
+            <div className="mt-2 text-xs text-gray-500">Click a family member to edit their info. (Add more coming soon!)</div>
+          </div>
           {/* Minimal Data Entry */}
           <div className="w-full flex flex-col gap-6 mb-8 max-w-md">
             <div className="flex gap-3 items-center">
@@ -399,15 +191,10 @@ function FamilyHealthDashboard({ open, onClose }) {
             </div>
           </div>
           {/* Risk Score */}
-          {showRisk && (
-            <div className="w-full flex flex-col items-center mb-4">
-              <div className="text-lg font-bold text-purple-600">Your risk level: <span className="text-pink-600 text-2xl animate-pulse">{getRiskLabelText(riskResult)}</span></div>
-              <div className="text-xs text-gray-500">(Personalized assessment based on your family and lifestyle data)</div>
-              <div className="mt-2 text-xs text-gray-500 text-center">
-                {riskResult && typeof riskResult === 'object' ? riskResult.disclaimer : 'This is an educational estimate based on family history and lifestyle. It does not replace a doctor or official medical calculators.'}
-              </div>
-            </div>
-          )}
+          <div className="w-full flex flex-col items-center mb-4">
+            <div className="text-lg font-bold text-purple-600">Your estimated risk: <span className="text-pink-600 text-2xl animate-pulse">{riskScore}%</span> <span className="text-base text-gray-600 font-normal">lifetime risk</span></div>
+            <div className="text-xs text-gray-500">(Personalized risk score based on your family and lifestyle data)</div>
+          </div>
           {/* Privacy Notice */}
           <div className="w-full text-xs text-gray-500 text-center mt-2">
             We store only minimal data, fully user-controlled, privacy focused. All fields are optional. Sharing requires your consent.
@@ -754,25 +541,21 @@ const RiskAssessmentModal = ({ open, onClose }) => {
   const AuthModal = () => {
     if (!authModal) return null;
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setAuthModal(null)}>
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-2xl p-0 w-full max-w-md mx-auto relative animate-fade-in" onClick={e => e.stopPropagation()}>
-          <button onClick={() => setAuthModal(null)} className="auth-close-btn absolute top-4 right-4 text-gray-400 hover:text-pink-600 transition-colors duration-200 focus:outline-none p-2 rounded-full bg-gray-100 hover:bg-gray-200 z-10">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-          {authModal === 'login' ? <Login onSwitch={() => setAuthModal('signup')} onLoginSuccess={handleLoginSuccess} /> : <SignUp onSwitch={() => setAuthModal('login')} onSignUpSuccess={handleSignUpSuccess} />}
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setAuthModal(null)}>
+        <div className="backdrop-blur-xl bg-white/70 border border-pink-100 rounded-3xl shadow-2xl p-0 w-full max-w-lg flex flex-col items-center animate-fade-in relative" onClick={e => e.stopPropagation()}>
+          <button onClick={() => setAuthModal(null)} className="absolute top-4 right-4 text-gray-400 hover:text-pink-500 text-2xl font-bold">&times;</button>
+          {authModal === 'login' ? <Login onSwitch={() => setAuthModal('signup')} /> : <SignUp onSwitch={() => setAuthModal('login')} />}
         </div>
       </div>
     );
   };
 
-  // Handler for opening genetic risk form
+  // Handler for opening dashboard with terms check
   const handleOpenDashboard = () => {
     if (!agreedToTerms) {
       setShowTermsModal(true);
     } else {
-      setShowGeneticRiskForm(true);
+      setShowFamilyDashboard(true);
     }
   };
 
@@ -854,37 +637,20 @@ const RiskAssessmentModal = ({ open, onClose }) => {
             </nav>
             {/* Desktop Auth Buttons */}
             <div className="hidden md:flex gap-3 items-center">
-              {user ? (
-                <>
-                  <div className="flex items-center gap-2 text-gray-700">
-                    <User className="w-5 h-5 text-pink-500" />
-                    <span className="font-medium">Welcome, {user.name}</span>
-                  </div>
-                  <button
-                    className="bg-white border border-red-500 text-red-600 px-6 py-2 rounded-full font-semibold hover:bg-red-600 hover:text-white transition-all duration-200"
-                    onClick={handleLogout}
-                  >
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    id="login-btn"
-                    className="bg-white border border-purple-500 text-purple-600 px-6 py-2 rounded-full font-semibold hover:bg-purple-600 hover:text-white transition-all duration-200"
-                    onClick={() => setAuthModal('login')}
-                  >
-                    Login
-                  </button>
-                  <button
-                    id="signup-btn"
-                    className="bg-white border border-purple-500 text-purple-600 px-6 py-2 rounded-full font-semibold hover:bg-purple-600 hover:text-white transition-all duration-200"
-                    onClick={() => setAuthModal('signup')}
-                  >
-                    Sign Up
-                  </button>
-                </>
-              )}
+              <button
+                id="login-btn"
+                className="bg-white border border-purple-500 text-purple-600 px-6 py-2 rounded-full font-semibold hover:bg-purple-600 hover:text-white transition-all duration-200"
+                onClick={() => setAuthModal('login')}
+              >
+                Login
+              </button>
+              <button
+                id="signup-btn"
+                className="bg-white border border-purple-500 text-purple-600 px-6 py-2 rounded-full font-semibold hover:bg-purple-600 hover:text-white transition-all duration-200"
+                onClick={() => setAuthModal('signup')}
+              >
+                Sign Up
+              </button>
             </div>
             {/* Hamburger Icon for Mobile */}
             <button
@@ -916,35 +682,18 @@ const RiskAssessmentModal = ({ open, onClose }) => {
                   Genetic Risk
                 </button>
                 <hr className="my-2 border-pink-100" />
-                {user ? (
-                  <>
-                    <div className="flex items-center gap-2 text-gray-700 px-2 py-1">
-                      <User className="w-4 h-4 text-pink-500" />
-                      <span className="text-sm font-medium">Welcome, {user.name}</span>
-                    </div>
-                    <button
-                      className="bg-white border border-red-500 text-red-600 px-4 py-2 rounded-full font-semibold hover:bg-red-600 hover:text-white transition-all duration-200 w-full text-left"
-                      onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
-                    >
-                      Logout
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      className="bg-white border border-purple-500 text-purple-600 px-4 py-2 rounded-full font-semibold hover:bg-purple-600 hover:text-white transition-all duration-200 w-full text-left"
-                      onClick={() => { setAuthModal('login'); setMobileMenuOpen(false); }}
-                    >
-                      Login
-                    </button>
-                    <button
-                      className="bg-white border border-purple-500 text-purple-600 px-4 py-2 rounded-full font-semibold hover:bg-purple-600 hover:text-white transition-all duration-200 w-full text-left"
-                      onClick={() => { setAuthModal('signup'); setMobileMenuOpen(false); }}
-                    >
-                      Sign Up
-                    </button>
-                  </>
-                )}
+                <button
+                  className="bg-white border border-purple-500 text-purple-600 px-4 py-2 rounded-full font-semibold hover:bg-purple-600 hover:text-white transition-all duration-200 w-full text-left"
+                  onClick={() => { setAuthModal('login'); setMobileMenuOpen(false); }}
+                >
+                  Login
+                </button>
+                <button
+                  className="bg-white border border-purple-500 text-purple-600 px-4 py-2 rounded-full font-semibold hover:bg-purple-600 hover:text-white transition-all duration-200 w-full text-left"
+                  onClick={() => { setAuthModal('signup'); setMobileMenuOpen(false); }}
+                >
+                  Sign Up
+                </button>
               </div>
             )}
           </div>
@@ -1286,7 +1035,6 @@ const RiskAssessmentModal = ({ open, onClose }) => {
       <AuthModal />
       <TermsModal />
       <FamilyHealthDashboard open={showFamilyDashboard} onClose={() => setShowFamilyDashboard(false)} />
-      <GeneticRiskForm open={showGeneticRiskForm} onClose={() => setShowGeneticRiskForm(false)} />
       {/* Floating Guide Me Button */}
       <button
         className="fixed bottom-8 right-8 z-[9999] bg-pink-500 text-white px-4 py-2 rounded-full shadow-lg hover:scale-105 transition"
