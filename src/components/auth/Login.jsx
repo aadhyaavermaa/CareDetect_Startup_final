@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, Heart, Flower, Baby, Sparkles } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 export default function Login({ onSwitch, onLoginSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -60,9 +60,16 @@ export default function Login({ onSwitch, onLoginSuccess }) {
       <div className="flex justify-center mb-6">
         <div className="relative">
           <div className="w-20 h-20 bg-gradient-to-tr from-pink-400 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-            <Baby className="text-white w-10 h-10" />
+            {/* Ovary Icon SVG */}
+            <svg className="w-10 h-10 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="8" cy="12" rx="3" ry="5" stroke="currentColor" strokeWidth="2" fill="currentColor" opacity="0.8"/>
+              <ellipse cx="16" cy="12" rx="3" ry="5" stroke="currentColor" strokeWidth="2" fill="currentColor" opacity="0.8"/>
+              <path d="M8 7 L12 5 L16 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/>
+            </svg>
           </div>
-          <div className="absolute -top-1 -right-1 w-6 h-6 bg-pink-500 rounded-full animate-pulse"></div>
+          <div className="absolute -top-1 -right-1 w-6 h-6 bg-pink-500 rounded-full animate-pulse flex items-center justify-center">
+            <span className="text-white text-xs">🎀</span>
+          </div>
         </div>
       </div>
       

@@ -800,7 +800,7 @@ const RiskAssessmentModal = ({ open, onClose }) => {
             <button
               className={`w-full py-3 rounded-xl font-bold text-lg transition-all duration-200 ${agreedToTerms ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg hover:scale-105' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
               disabled={!agreedToTerms}
-              onClick={() => { setShowTermsModal(false); setShowFamilyDashboard(true); }}
+              onClick={() => { setShowTermsModal(false); setShowGeneticRiskForm(true); }}
             >
               Proceed
             </button>
@@ -911,7 +911,7 @@ const RiskAssessmentModal = ({ open, onClose }) => {
                 </button>
                 <button
                   className="nav-link bg-transparent border-none p-0 text-left focus:outline-none"
-                  onClick={() => { setShowFamilyDashboard(true); setMobileMenuOpen(false); }}
+                  onClick={() => { setShowGeneticRiskForm(true); setMobileMenuOpen(false); }}
                 >
                   Genetic Risk
                 </button>
@@ -1285,7 +1285,6 @@ const RiskAssessmentModal = ({ open, onClose }) => {
       </footer>
       <AuthModal />
       <TermsModal />
-      <FamilyHealthDashboard open={showFamilyDashboard} onClose={() => setShowFamilyDashboard(false)} />
       <GeneticRiskForm open={showGeneticRiskForm} onClose={() => setShowGeneticRiskForm(false)} />
       {/* Floating Guide Me Button */}
       <button

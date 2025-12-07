@@ -33,10 +33,11 @@ export function getBreastCancerRiskLevel(userData, relatives) {
   const userBrcaStatus = self && typeof self.brcaStatus === 'string' ? self.brcaStatus.toLowerCase() : 'unknown';
 
   // 5. Lifestyle flags count
+  // Support both old field names (heavyDrinking, unhealthyLifestyle) and new ones (drinking, lifestyleUnhealthy)
   const lifestyleFlags = [
     !!(userData && userData.smoking),
-    !!(userData && userData.heavyDrinking),
-    !!(userData && userData.unhealthyLifestyle)
+    !!(userData && (userData.drinking || userData.heavyDrinking)),
+    !!(userData && (userData.lifestyleUnhealthy || userData.unhealthyLifestyle))
   ].filter(Boolean).length;
 
   // Helper: check same-side pattern among first/second degree relatives
@@ -48,11 +49,15 @@ export function getBreastCancerRiskLevel(userData, relatives) {
 
   // Apply rules in clear priority order and return object with level, labelText, and disclaimer
 
-  // HIGH RISK
+  // Category C: "Clearly higher risk – talk to a doctor"
+  // Two or more first-degree relatives with breast cancer; OR
+  // Any first-degree relative diagnosed before age 40; OR
+  // User's BRCA status = positive
   if (userBrcaStatus === 'positive') {
     return {
       level: 'high',
-      labelText: 'High – talk to a doctor or genetic counselor.',
+      category: 'C',
+      labelText: "Your estimated risk: clearly higher than average (>25%). Please talk to a doctor or genetic counselor for proper risk assessment.",
       disclaimer: disclaimer
     };
   }
@@ -60,7 +65,8 @@ export function getBreastCancerRiskLevel(userData, relatives) {
   if (firstDegreeCount >= 2) {
     return {
       level: 'high',
-      labelText: 'High – talk to a doctor or genetic counselor.',
+      category: 'C',
+      labelText: "Your estimated risk: clearly higher than average (>25%). Please talk to a doctor or genetic counselor for proper risk assessment.",
       disclaimer: disclaimer
     };
   }
@@ -68,16 +74,21 @@ export function getBreastCancerRiskLevel(userData, relatives) {
   if (minFirstDegreeAge !== null && minFirstDegreeAge < 40) {
     return {
       level: 'high',
-      labelText: 'High – talk to a doctor or genetic counselor.',
+      category: 'C',
+      labelText: "Your estimated risk: clearly higher than average (>25%). Please talk to a doctor or genetic counselor for proper risk assessment.",
       disclaimer: disclaimer
     };
   }
 
-  // MODERATELY INCREASED RISK
+  // Category B: "Moderately increased risk"
+  // Exactly one first-degree relative with breast cancer at any age; OR
+  // Two relatives with breast cancer on the same side of the family; OR
+  // Lifestyle is clearly unhealthy (2 or more of: smoking, heavy drinking, unhealthy lifestyle)
   if (firstDegreeCount === 1) {
     return {
       level: 'moderate',
-      labelText: 'Moderately increased',
+      category: 'B',
+      labelText: "Your estimated risk: higher than average (roughly in the 15–25% range).",
       disclaimer: disclaimer
     };
   }
@@ -85,7 +96,8 @@ export function getBreastCancerRiskLevel(userData, relatives) {
   if (twoOnSameSide && totalWithCancer >= 2) {
     return {
       level: 'moderate',
-      labelText: 'Moderately increased',
+      category: 'B',
+      labelText: "Your estimated risk: higher than average (roughly in the 15–25% range).",
       disclaimer: disclaimer
     };
   }
@@ -95,18 +107,22 @@ export function getBreastCancerRiskLevel(userData, relatives) {
   if (firstDegreeCount === 0 && secondDegreeCount <= 1 && lifestyleFlags >= 2) {
     return {
       level: 'moderate',
-      labelText: 'Moderately increased',
+      category: 'B',
+      labelText: "Your estimated risk: higher than average (roughly in the 15–25% range).",
       disclaimer: disclaimer
     };
   }
 
-  // AROUND AVERAGE RISK
-  // No first-degree relatives with breast cancer
+  // Category A: "Around average risk"
+  // No first-degree relatives (mother, sister, daughter) with breast cancer.
+  // At most one second-degree relative (grandmother/aunt) with cancer after age 50.
+  // No BRCA positive result.
   if (firstDegreeCount === 0) {
     if (secondDegreeCount === 0) {
       return {
         level: 'around_average',
-        labelText: 'Around average',
+        category: 'A',
+        labelText: "Your estimated risk: ~12% lifetime risk (similar to general population).",
         disclaimer: disclaimer
       };
     }
@@ -117,17 +133,19 @@ export function getBreastCancerRiskLevel(userData, relatives) {
       if (!sd.ageAtDiagnosis || sd.ageAtDiagnosis >= 50) {
         return {
           level: 'around_average',
-          labelText: 'Around average',
+          category: 'A',
+          labelText: "Your estimated risk: ~12% lifetime risk (similar to general population).",
           disclaimer: disclaimer
         };
       }
     }
   }
 
-  // Default fallback
+  // Default fallback - Category A
   return {
     level: 'around_average',
-    labelText: 'Around average',
+    category: 'A',
+    labelText: "Your estimated risk: ~12% lifetime risk (similar to general population).",
     disclaimer: disclaimer
   };
 }
