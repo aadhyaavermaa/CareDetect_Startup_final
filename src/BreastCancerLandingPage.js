@@ -9,6 +9,7 @@ import SweatBiomarkerDetection from './SweatBiomarkerDetection';
 import Login from './components/auth/Login';
 import SignUp from './components/auth/SignUp';
 import OnboardingOverlay from "./components/OnboardingOverlay";
+import DoctorModel from './components/DoctorModel';
 
 export default function BreastCancerLandingPage() {
 
@@ -583,7 +584,7 @@ const RiskAssessmentModal = ({ open, onClose }) => {
             <button
               className={`w-full py-3 rounded-xl font-bold text-lg transition-all duration-200 ${agreedToTerms ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg hover:scale-105' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
               disabled={!agreedToTerms}
-              onClick={() => { setShowTermsModal(false); setShowGeneticRiskForm(true); }}
+              onClick={() => { setShowTermsModal(false); setShowFamilyDashboard(true); }}
             >
               Proceed
             </button>
@@ -677,7 +678,7 @@ const RiskAssessmentModal = ({ open, onClose }) => {
                 </button>
                 <button
                   className="nav-link bg-transparent border-none p-0 text-left focus:outline-none"
-                  onClick={() => { setShowGeneticRiskForm(true); setMobileMenuOpen(false); }}
+                  onClick={() => { setShowFamilyDashboard(true); setMobileMenuOpen(false); }}
                 >
                   Genetic Risk
                 </button>
@@ -1034,11 +1035,23 @@ const RiskAssessmentModal = ({ open, onClose }) => {
       </footer>
       <AuthModal />
       <TermsModal />
-<<<<<<< HEAD
-      <FamilyHealthDashboard open={showFamilyDashboard} onClose={() => setShowFamilyDashboard(false)} />
-=======
-      <GeneticRiskForm open={showGeneticRiskForm} onClose={() => setShowGeneticRiskForm(false)} />
->>>>>>> 4e6b6f0fa18ad617077e2b963f406bb0422d11d4
+      {/* 3D Model Modal */}
+      {showDoctorModel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowDoctorModel(false)}>
+          <div className="backdrop-blur-2xl bg-white/90 border border-pink-100 rounded-3xl shadow-2xl p-0 w-full max-w-4xl flex flex-col items-center animate-fade-in relative" onClick={e => e.stopPropagation()} style={{boxShadow: '0 8px 32px 0 rgba(255, 182, 193, 0.25)'}}>
+            <button onClick={() => setShowDoctorModel(false)} className="absolute top-4 right-4 text-gray-400 hover:text-pink-500 text-2xl font-bold">&times;</button>
+            <div className="p-8 w-full flex flex-col items-center">
+              <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600 mb-6 font-lexend tracking-tight drop-shadow-lg text-center" style={{letterSpacing: '0.03em'}}>3D Breast Model</h2>
+              <div className="w-full flex justify-center">
+                <DoctorModel />
+              </div>
+              <p className="text-gray-600 text-center mt-4 max-w-2xl">
+                Interactive 3D model for breast health education and awareness. Use your mouse to rotate and explore the model.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Floating Guide Me Button */}
       <button
         className="fixed bottom-8 right-8 z-[9999] bg-pink-500 text-white px-4 py-2 rounded-full shadow-lg hover:scale-105 transition"
