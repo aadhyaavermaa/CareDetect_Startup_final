@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, Heart } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 export default function Login({ onSwitch }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -14,9 +14,19 @@ export default function Login({ onSwitch }) {
     <div className="w-full max-w-md bg-white/40 backdrop-blur-2xl border border-pink-200 rounded-3xl shadow-2xl p-10 animate-fade-in">
       
       {/* Logo */}
-      <div className="flex flex-col items-center mb-6">
-        <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl">
-          <Heart className="text-white w-8 h-8" />
+      <div className="flex justify-center mb-6">
+        <div className="relative">
+          <div className="w-20 h-20 bg-gradient-to-tr from-pink-400 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+            {/* Ovary Icon SVG */}
+            <svg className="w-10 h-10 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="8" cy="12" rx="3" ry="5" stroke="currentColor" strokeWidth="2" fill="currentColor" opacity="0.8"/>
+              <ellipse cx="16" cy="12" rx="3" ry="5" stroke="currentColor" strokeWidth="2" fill="currentColor" opacity="0.8"/>
+              <path d="M8 7 L12 5 L16 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/>
+            </svg>
+          </div>
+          <div className="absolute -top-1 -right-1 w-6 h-6 bg-pink-500 rounded-full animate-pulse flex items-center justify-center">
+            <span className="text-white text-xs">🎀</span>
+          </div>
         </div>
         <h2 className="text-3xl font-bold mt-4 bg-gradient-to-r from-pink-500 to-purple-600 text-transparent bg-clip-text">
           Welcome Back

@@ -1,4 +1,8 @@
 import React, { useState } from 'react';
+<<<<<<< HEAD
+=======
+import { Mail, Lock, Eye, EyeOff, User } from "lucide-react";
+>>>>>>> 4e6b6f0fa18ad617077e2b963f406bb0422d11d4
 
 export default function SignUp({ onSwitch }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -15,10 +19,46 @@ export default function SignUp({ onSwitch }) {
     // Optionally, show a toast or message here
   };
   return (
+<<<<<<< HEAD
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-200 via-purple-100 to-blue-200">
       <div className="backdrop-blur-xl bg-white/60 border border-pink-100 rounded-3xl shadow-2xl p-10 w-full max-w-md flex flex-col items-center animate-fade-in">
         <h2 className="text-3xl font-extrabold text-pink-600 mb-8 font-lexend tracking-tight drop-shadow-lg text-center">Create Your Account</h2>
         <form className="w-full flex flex-col gap-6" onSubmit={handleSubmit}>
+=======
+    <div className="w-full max-w-md bg-gradient-to-br from-white via-pink-50 to-purple-50 backdrop-blur-2xl border-2 border-pink-200 shadow-xl p-6 animate-fade-in rounded-2xl">
+      
+      {/* Logo */}
+      <div className="flex justify-center mb-6">
+        <div className="relative">
+          <div className="w-20 h-20 bg-gradient-to-tr from-pink-400 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+            {/* Ovary Icon SVG */}
+            <svg className="w-10 h-10 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="8" cy="12" rx="3" ry="5" stroke="currentColor" strokeWidth="2" fill="currentColor" opacity="0.8"/>
+              <ellipse cx="16" cy="12" rx="3" ry="5" stroke="currentColor" strokeWidth="2" fill="currentColor" opacity="0.8"/>
+              <path d="M8 7 L12 5 L16 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/>
+            </svg>
+          </div>
+          <div className="absolute -top-1 -right-1 w-6 h-6 bg-pink-500 rounded-full animate-pulse flex items-center justify-center">
+            <span className="text-white text-xs">🎀</span>
+          </div>
+        </div>
+      </div>
+      
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-gray-800 mb-2">
+          Create Account
+        </h2>
+        <div className="h-1 w-16 bg-gradient-to-r from-pink-400 to-purple-600 mx-auto rounded-full mb-3"></div>
+        <p className="text-gray-600 text-sm">Join us on your health journey</p>
+      </div>
+
+      {/* Form */}
+      <form className="space-y-4" onSubmit={handleSubmit}>
+        
+        {/* Name */}
+        <div className="group">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+>>>>>>> 4e6b6f0fa18ad617077e2b963f406bb0422d11d4
           <div className="relative">
             <input type="text" required placeholder="Name" className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-purple-400 transition text-gray-900" />
           </div>
