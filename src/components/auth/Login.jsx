@@ -1,74 +1,153 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, Heart } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Heart, Flower, Baby, Sparkles } from "lucide-react";
 
-export default function Login({ onSwitch }) {
+export default function Login({ onSwitch, onLoginSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const closeBtn = document.querySelector(".auth-close-btn");
-    if (closeBtn) closeBtn.click();
+    setError('');
+    setLoading(true);
+
+    try {
+      // Simulate authentication - replace with actual API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Simple validation (in real app, this would be server-side)
+      if (formData.email && formData.password.length >= 6) {
+        // Store user session
+        localStorage.setItem('user', JSON.stringify({
+          email: formData.email,
+          name: formData.email.split('@')[0],
+          loginTime: new Date().toISOString()
+        }));
+        
+        onLoginSuccess && onLoginSuccess({
+          email: formData.email,
+          name: formData.email.split('@')[0]
+        });
+        
+        // Close modal
+        const closeBtn = document.querySelector(".auth-close-btn");
+        if (closeBtn) closeBtn.click();
+      } else {
+        setError('Invalid email or password');
+      }
+    } catch (err) {
+      setError('Login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="w-full max-w-md bg-white/40 backdrop-blur-2xl border border-pink-200 rounded-3xl shadow-2xl p-10 animate-fade-in">
+    <div className="w-full max-w-md bg-gradient-to-br from-white via-pink-50 to-purple-50 backdrop-blur-2xl border-2 border-pink-200 shadow-xl p-6 animate-fade-in rounded-2xl">
       
       {/* Logo */}
-      <div className="flex flex-col items-center mb-6">
-        <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl">
-          <Heart className="text-white w-8 h-8" />
+      <div className="flex justify-center mb-6">
+        <div className="relative">
+          <div className="w-20 h-20 bg-gradient-to-tr from-pink-400 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+            <Baby className="text-white w-10 h-10" />
+          </div>
+          <div className="absolute -top-1 -right-1 w-6 h-6 bg-pink-500 rounded-full animate-pulse"></div>
         </div>
-        <h2 className="text-3xl font-bold mt-4 bg-gradient-to-r from-pink-500 to-purple-600 text-transparent bg-clip-text">
+      </div>
+      
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-gray-800 mb-2">
           Welcome Back
         </h2>
-        <p className="text-gray-600 text-sm">Sign in to continue your journey</p>
+        <div className="h-1 w-16 bg-gradient-to-r from-pink-400 to-purple-600 mx-auto rounded-full mb-3"></div>
+        <p className="text-gray-600 text-sm">Sign in to continue your health journey</p>
       </div>
 
       {/* Form */}
-      <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+      <form className="space-y-4" onSubmit={handleSubmit}>
         
         {/* Email */}
-        <div className="relative group">
-          <Mail className="absolute left-4 top-3.5 text-gray-400 group-hover:text-pink-500 transition" />
-          <input
-            type="email"
-            required
-            placeholder="Email Address"
-            className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/70 border border-gray-300 focus:ring-2 focus:ring-pink-400 outline-none transition text-gray-900 shadow-sm"
-          />
+        <div className="group">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Mail className="h-5 w-5 text-gray-400 group-hover:text-pink-500 transition-colors" />
+            </div>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              placeholder="Enter your email"
+              className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 bg-white/70 backdrop-blur"
+            />
+          </div>
         </div>
 
         {/* Password */}
-        <div className="relative group">
-          <Lock className="absolute left-4 top-3.5 text-gray-400 group-hover:text-pink-500 transition" />
-          <input
-            type={showPassword ? "text" : "password"}
-            required
-            placeholder="Password"
-            className="w-full pl-12 pr-12 py-3 rounded-xl bg-white/70 border border-gray-300 focus:ring-2 focus:ring-pink-400 outline-none transition text-gray-900 shadow-sm"
-          />
-          
-          {/* Eye toggle */}
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-3.5 text-gray-400 hover:text-purple-500 transition"
-          >
-            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-          </button>
+        <div className="group">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Lock className="h-5 w-5 text-gray-400 group-hover:text-pink-500 transition-colors" />
+            </div>
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              placeholder="Enter your password"
+              className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 bg-white/70 backdrop-blur"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+            >
+              {showPassword ? <EyeOff className="h-5 w-5 text-gray-400 hover:text-purple-500 transition-colors" /> : <Eye className="h-5 w-5 text-gray-400 hover:text-purple-500 transition-colors" />}
+            </button>
+          </div>
         </div>
 
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+
         {/* Sign In Button */}
-        <button className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold shadow-lg hover:scale-[1.02] transition-all duration-300">
-          Sign In
+        <button 
+          type="submit"
+          disabled={loading}
+          className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all duration-200 transform ${
+            loading 
+              ? 'bg-gray-400 cursor-not-allowed' 
+              : 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl'
+          }`}
+        >
+          {loading ? 'Signing In...' : 'Sign In'}
         </button>
       </form>
 
       {/* Switch */}
-      <div className="mt-6 text-center text-gray-600 text-sm">
-        Don’t have an account?
+      <div className="mt-6 text-center">
+        <span className="text-sm text-gray-600">Don't have an account? </span>
         <button
-          className="text-pink-600 font-semibold hover:underline ml-1"
+          className="text-sm font-medium text-pink-600 hover:text-pink-700 transition-colors"
           onClick={onSwitch}
         >
           Sign Up
