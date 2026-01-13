@@ -11,91 +11,271 @@ const MythVsFactGame = ({ onBack, onClose }) => {
   const [showFeedback, setShowFeedback] = useState(false);
   const [answers, setAnswers] = useState([]);
 
-  const questions = [
+  const allQuestions = [
+    // MYTH QUESTIONS (20 total)
     {
       id: 1,
-      question: "Breast cancer only happens after age 40?",
-      answer: false,
-      type: "myth",
-      explanation: "While risk increases with age, breast cancer can occur at any age. About 5% of cases occur in women under 40.",
-      category: "Age & Risk"
-    },
-    {
-      id: 2,
       question: "All breast lumps are cancerous?",
       answer: false,
       type: "myth",
-      explanation: "About 80% of breast lumps are benign (non-cancerous). However, any new lump should be checked by a doctor.",
+      explanation: "80-90% of breast lumps are benign (non-cancerous). However, every lump needs proper doctor evaluation for accurate diagnosis.",
       category: "Symptoms"
+    },
+    {
+      id: 2,
+      question: "Breast cancer only affects older women?",
+      answer: false,
+      type: "myth",
+      explanation: "About 50% of breast cancer cases are diagnosed before age 50. Young women are also at risk and should be aware of symptoms.",
+      category: "Age & Risk"
     },
     {
       id: 3,
-      question: "Self-examination can help detect breast cancer early?",
-      answer: true,
-      type: "fact",
-      explanation: "Regular self-exams help you know what's normal for you, making it easier to notice changes.",
-      category: "Prevention"
-    },
-    {
-      id: 4,
-      question: "Family history means you will definitely get breast cancer?",
+      question: "Having family history means I'll definitely get cancer?",
       answer: false,
       type: "myth",
-      explanation: "Family history increases risk but doesn't guarantee you'll get cancer. Only 5-10% of cases are hereditary.",
+      explanation: "85-90% of breast cancer cases have NO family history. Most cases are sporadic, not hereditary.",
       category: "Genetics"
     },
     {
-      id: 5,
-      question: "Men cannot get breast cancer?",
+      id: 4,
+      question: "Breast pain means cancer?",
       answer: false,
       type: "myth",
-      explanation: "Men can get breast cancer, though it's rare (less than 1% of all cases). About 2,600 men are diagnosed yearly in the US.",
-      category: "Gender"
-    },
-    {
-      id: 6,
-      question: "Mammograms can detect cancer before you can feel a lump?",
-      answer: true,
-      type: "fact",
-      explanation: "Mammograms can detect tumors 2-3 years before they can be felt, when they're most treatable.",
-      category: "Screening"
-    },
-    {
-      id: 7,
-      question: "Wearing underwire bras causes breast cancer?",
-      answer: false,
-      type: "myth",
-      explanation: "There's no scientific evidence linking underwire bras to breast cancer. This is a persistent myth.",
-      category: "Lifestyle"
-    },
-    {
-      id: 8,
-      question: "Exercise can reduce breast cancer risk?",
-      answer: true,
-      type: "fact",
-      explanation: "Regular physical activity can reduce breast cancer risk by 10-20% by helping maintain healthy weight and hormone levels.",
-      category: "Prevention"
-    },
-    {
-      id: 9,
-      question: "Breast cancer always causes pain?",
-      answer: false,
-      type: "myth",
-      explanation: "Most breast cancers are painless in early stages. Pain is not a reliable indicator of cancer.",
+      explanation: "Breast pain is RARELY a sign of cancer. It's usually hormonal or cyclical and related to menstrual cycles.",
       category: "Symptoms"
     },
     {
+      id: 5,
+      question: "No lump means no cancer?",
+      answer: false,
+      type: "myth",
+      explanation: "Early cancers often show as skin changes, nipple inversion, or dimpling FIRST, before any lump can be felt.",
+      category: "Symptoms"
+    },
+    {
+      id: 6,
+      question: "Biopsy spreads cancer throughout the body?",
+      answer: false,
+      type: "myth",
+      explanation: "Biopsy is completely SAFE and doesn't spread cancer. Delaying proper diagnosis is actually dangerous.",
+      category: "Treatment"
+    },
+    {
+      id: 7,
+      question: "Mammograms cause cancer due to radiation?",
+      answer: false,
+      type: "myth",
+      explanation: "Mammogram radiation dose is only 0.4mSv (equivalent to 7 weeks of background radiation). They are life-saving screening tools.",
+      category: "Screening"
+    },
+    {
+      id: 8,
+      question: "Men don't get breast cancer?",
+      answer: false,
+      type: "myth",
+      explanation: "About 1% of breast cancer cases occur in men. They have the same symptoms and need the same awareness as women.",
+      category: "Gender"
+    },
+    {
+      id: 9,
+      question: "Breast cancer is a death sentence?",
+      answer: false,
+      type: "myth",
+      explanation: "90% survival rate when caught early. Stage 1 breast cancer has a 99% survival rate. Early detection saves lives!",
+      category: "Treatment"
+    },
+    {
       id: 10,
-      question: "Early detection significantly improves survival rates?",
+      question: "Wearing tight bras causes breast cancer?",
+      answer: false,
+      type: "myth",
+      explanation: "There is no scientific evidence linking bra type or tightness to breast cancer risk. This is a persistent myth.",
+      category: "Lifestyle"
+    },
+    {
+      id: 11,
+      question: "Self-examination replaces mammogram screening?",
+      answer: false,
+      type: "myth",
+      explanation: "Self-exam finds only 70% of cancers and misses deep cancers. BOTH self-exam AND mammogram screening are needed together.",
+      category: "Screening"
+    },
+    {
+      id: 12,
+      question: "Breastfeeding prevents cancer completely?",
+      answer: false,
+      type: "myth",
+      explanation: "Breastfeeding reduces risk by only 4-5%, it doesn't eliminate cancer risk. Regular screening is still essential.",
+      category: "Prevention"
+    },
+    {
+      id: 13,
+      question: "Antiperspirants cause breast cancer?",
+      answer: false,
+      type: "myth",
+      explanation: "No scientific evidence supports this claim. Aluminum absorption through skin is minimal and not linked to cancer.",
+      category: "Lifestyle"
+    },
+    {
+      id: 14,
+      question: "Sugar directly feeds cancer growth?",
+      answer: false,
+      type: "myth",
+      explanation: "All cells use sugar for energy. Dietary sugar doesn't directly CAUSE cancer, though healthy diet is always recommended.",
+      category: "Lifestyle"
+    },
+    {
+      id: 15,
+      question: "Abortion or contraception causes breast cancer?",
+      answer: false,
+      type: "myth",
+      explanation: "No causal link has been scientifically proven. Real risk factors are primarily hormonal, genetic, and lifestyle-related.",
+      category: "Lifestyle"
+    },
+    {
+      id: 16,
+      question: "Dense breasts mean high cancer risk?",
+      answer: false,
+      type: "myth",
+      explanation: "Dense breasts make cancer detection harder on mammograms, but don't necessarily mean higher cancer risk.",
+      category: "Screening"
+    },
+    {
+      id: 17,
+      question: "5 years cancer-free means completely cured?",
+      answer: false,
+      type: "myth",
+      explanation: "20% of recurrences happen after 5 years. Lifetime monitoring and follow-up care are still needed.",
+      category: "Treatment"
+    },
+    {
+      id: 18,
+      question: "Radiation therapy is too dangerous to use?",
+      answer: false,
+      type: "myth",
+      explanation: "Targeted radiation therapy saves lives and is precisely controlled. Side effects are manageable and temporary.",
+      category: "Treatment"
+    },
+    {
+      id: 19,
+      question: "Breast removal is the only treatment option?",
+      answer: false,
+      type: "myth",
+      explanation: "80% of early-stage cancers can be treated with breast conservation surgery. Complete removal isn't always necessary.",
+      category: "Treatment"
+    },
+    {
+      id: 20,
+      question: "Stress directly causes breast cancer?",
+      answer: false,
+      type: "myth",
+      explanation: "Stress can weaken immunity but is not a direct cause of cancer. Managing stress is good for overall health.",
+      category: "Lifestyle"
+    },
+    
+    // FACT QUESTIONS (10 total)
+    {
+      id: 21,
+      question: "Stage 1 breast cancer has 99% 5-year survival rate?",
       answer: true,
       type: "fact",
-      explanation: "When caught early (stage 1), the 5-year survival rate is nearly 100%. Early detection saves lives!",
+      explanation: "When breast cancer is found at Stage 1 (localized, <2cm, no lymph nodes), modern treatment cures 99% of women. Regular self-exam + mammogram makes early detection possible.",
+      category: "Treatment"
+    },
+    {
+      id: 22,
+      question: "Self-exam finds 70% of breast lumps before doctor visits?",
+      answer: true,
+      type: "fact",
+      explanation: "70% of breast lumps are discovered by women themselves during monthly self-exams. Do it Day 7-10 of your cycle when breasts are least tender. Upper outer quadrant focus!",
+      category: "Prevention"
+    },
+    {
+      id: 23,
+      question: "50% breast cancer cases diagnosed before age 50?",
+      answer: true,
+      type: "fact",
+      explanation: "In India, 50% of breast cancer occurs in women under 50 - much younger than global average. Family history, early periods, late pregnancy increase young women's risk.",
+      category: "Age & Risk"
+    },
+    {
+      id: 24,
+      question: "85-90% breast cancers have NO family history?",
+      answer: true,
+      type: "fact",
+      explanation: "Only 10-15% cases are hereditary. 85-90% women with breast cancer had no family history. Age, hormones, lifestyle affect everyone regardless of genetics.",
+      category: "Genetics"
+    },
+    {
+      id: 25,
+      question: "Mammogram + ultrasound detects 95% early cancers?",
+      answer: true,
+      type: "fact",
+      explanation: "Young Indian women often have dense breasts where mammogram alone misses 20-30% cancers. Ultrasound + mammogram together = 95% detection rate for early stage.",
+      category: "Screening"
+    },
+    {
+      id: 26,
+      question: "Breastfeeding reduces risk by 4% per year breastfed?",
+      answer: true,
+      type: "fact",
+      explanation: "Each year of breastfeeding lowers lifetime breast cancer risk by 4.3%. Total 12+ months breastfeeding = significant protection. Natural prevention!",
+      category: "Prevention"
+    },
+    {
+      id: 27,
+      question: "1 new breast cancer diagnosis every 4 minutes in India?",
+      answer: true,
+      type: "fact",
+      explanation: "India sees 200,000+ new cases yearly = 1 woman diagnosed every 4 minutes. 70% late stage detection. YOUR awareness can change this statistic.",
+      category: "Statistics"
+    },
+    {
+      id: 28,
+      question: "50% breast cancers found in upper outer quadrant?",
+      answer: true,
+      type: "fact",
+      explanation: "50% of all breast cancers develop in upper outer quadrant (towards armpit). Self-exam this area specially using circular motion with 3 fingers.",
+      category: "Symptoms"
+    },
+    {
+      id: 29,
+      question: "90% overall survival with modern treatment?",
+      answer: true,
+      type: "fact",
+      explanation: "90% of breast cancer patients survive 5+ years with current treatments. Early detection + targeted therapy = dramatic improvement over past decades.",
+      category: "Treatment"
+    },
+    {
+      id: 30,
+      question: "Biopsy does NOT spread cancer?",
+      answer: true,
+      type: "fact",
+      explanation: "Common myth delays diagnosis. Needle biopsy is safe, accurate, and essential. 80-90% 'suspicious lumps' prove benign. Don't delay - get it done!",
       category: "Treatment"
     }
   ];
 
+  // Shuffle and select 10 random questions for each game
+  const [questions, setQuestions] = useState([]);
+
+  // Shuffle array function
+  const shuffleArray = (array) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
   // Start game
   const startGame = () => {
+    // Select 10 random questions from the pool of 20
+    const shuffledQuestions = shuffleArray(allQuestions).slice(0, 10);
+    setQuestions(shuffledQuestions);
+    
     setGameState('playing');
     setCurrentQuestion(0);
     setScore(0);
@@ -202,10 +382,11 @@ const MythVsFactGame = ({ onBack, onClose }) => {
                   How to Play
                 </h3>
                 <ul className="space-y-2 text-gray-600">
-                  <li>• 10 rapid-fire questions</li>
+                  <li>• 10 questions from pool of 30</li>
+                  <li>• Mix of myths and facts</li>
                   <li>• 15 seconds per question</li>
-                  <li>• Swipe or click True/False</li>
                   <li>• Build streaks for bonus points</li>
+                  <li>• Different questions each game!</li>
                 </ul>
               </div>
               
@@ -227,13 +408,21 @@ const MythVsFactGame = ({ onBack, onClose }) => {
           {/* Categories Preview */}
           <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/50 mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Question Categories</h2>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              {['Age & Risk', 'Symptoms', 'Prevention', 'Genetics', 'Screening'].map((category, index) => (
+            <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
+              {[
+                { name: 'Symptoms', emoji: '🔍' },
+                { name: 'Screening', emoji: '📋' },
+                { name: 'Treatment', emoji: '🏥' },
+                { name: 'Lifestyle', emoji: '🌱' },
+                { name: 'Prevention', emoji: '🛡️' },
+                { name: 'Genetics', emoji: '🧬' },
+                { name: 'Age & Risk', emoji: '🎂' },
+                { name: 'Gender', emoji: '👥' },
+                { name: 'Statistics', emoji: '📊' }
+              ].map((category, index) => (
                 <div key={index} className="text-center p-4 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl">
-                  <div className="text-2xl mb-2">
-                    {['🎂', '🔍', '🛡️', '🧬', '📋'][index]}
-                  </div>
-                  <div className="text-sm font-semibold text-gray-700">{category}</div>
+                  <div className="text-2xl mb-2">{category.emoji}</div>
+                  <div className="text-sm font-semibold text-gray-700">{category.name}</div>
                 </div>
               ))}
             </div>
@@ -279,8 +468,23 @@ const MythVsFactGame = ({ onBack, onClose }) => {
                 </div>
               )}
             </div>
-            <div className="text-sm text-gray-600">
-              {currentQuestion + 1}/{questions.length}
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-gray-600">
+                {currentQuestion + 1}/{questions.length}
+              </div>
+              {/* Submit and Back buttons */}
+              <button
+                onClick={() => setGameState('results')}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold"
+              >
+                Submit Quiz
+              </button>
+              <button
+                onClick={onBack}
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-semibold"
+              >
+                Back to Games
+              </button>
             </div>
           </div>
 

@@ -5,97 +5,97 @@ const steps = [
   {
     selector: ".navbar-logo",
     title: "Welcome to CareDetect! 👋",
-    message: "Main aapka AI health assistant hun! Aaj main aapko CareDetect ke saare features dikhaunga. Chaliye shuru karte hain!",
+    message: "I'm your AI health assistant! Today I'll show you all the features of CareDetect. Let's get started!",
     position: "bottom"
   },
   {
     selector: "nav a[href='#how-it-works']",
     title: "How It Works 🔍",
-    message: "Yeh section aapko step-by-step batata hai ki CareDetect kaise kaam karta hai. Bahut easy hai!",
+    message: "This section shows you step-by-step how CareDetect works. It's very easy to understand!",
     position: "bottom"
   },
   {
     selector: "nav button:has-text('🎮 Games')",
     title: "Interactive Games 🎮",
-    message: "Yahan se aap fun games khel sakte hain! 'Spot the Sign' aur 'Myth vs Fact' - learning ke saath entertainment!",
+    message: "Here you can play fun educational games! 'Spot the Sign' and 'Myth vs Fact' - learning with entertainment!",
     position: "bottom"
   },
   {
     selector: "nav button:contains('3D Model')",
     title: "3D Breast Model 🫀",
-    message: "Yeh interactive 3D model aapko breast anatomy sikhata hai. Different regions click kar ke symptoms dekh sakte hain!",
+    message: "This interactive 3D model teaches you breast anatomy. Click on different regions to see symptoms!",
     position: "bottom"
   },
   {
     selector: "nav button:contains('Risk Assessment')",
     title: "Risk Assessment 📊",
-    message: "Yahan aap apna personalized breast cancer risk assessment kar sakte hain. Bilkul free aur accurate!",
+    message: "Here you can do your personalized breast cancer risk assessment. It's completely free and accurate!",
     position: "bottom"
   },
   {
     selector: "nav button:contains('Genetic Risk')",
     title: "Genetic Risk Calculator 🧬",
-    message: "Family history aur genetics ke basis par aapka risk calculate karta hai. Bahut important feature hai!",
+    message: "This calculates your risk based on family history and genetics. It's a very important feature!",
     position: "bottom"
   },
   {
     selector: "nav button:contains('Login')",
     title: "Login Account 👤",
-    message: "Agar aapka account hai to yahan se login kar sakte hain. Aapka data safe rahega!",
+    message: "If you have an account, you can login here. Your data will be kept safe!",
     position: "bottom"
   },
   {
     selector: "nav button:contains('Sign Up')",
     title: "Create New Account ✨",
-    message: "Naya user hain? Yahan se account banayiye! Free hai aur sirf 2 minute lagega!",
+    message: "New user? Create your account here! It's free and takes only 2 minutes!",
     position: "bottom"
   },
   {
     selector: ".hero-section button:first-of-type",
     title: "Start Screening 🚀",
-    message: "Yeh main button hai! Yahan se aap AI-powered breast cancer screening shuru kar sakte hain!",
+    message: "This is the main button! Here you can start AI-powered breast cancer screening!",
     position: "top"
   },
   {
     selector: ".hero-section button:nth-of-type(2)",
     title: "Watch Demo 📹",
-    message: "Pehle demo dekhna chahte hain? Yahan click kariye! Video mein sab kuch samjhaya gaya hai!",
+    message: "Want to see a demo first? Click here! The video explains everything!",
     position: "top"
   },
   {
     selector: ".hero-section button:nth-of-type(3)",
     title: "Sweat Detection 💧",
-    message: "Yeh unique feature hai! Sweat biomarkers se breast cancer detection - bilkul non-invasive!",
+    message: "This is a unique feature! Breast cancer detection using sweat biomarkers - completely non-invasive!",
     position: "top"
   },
   {
     selector: ".games-section",
     title: "Interactive Games Hub 🏆",
-    message: "Yahan se games access kar sakte hain! Learning ko fun banane ka best tarika hai!",
+    message: "Access games from here! It's the best way to make learning fun!",
     position: "top"
   },
   {
     selector: ".how-it-works",
     title: "How CareDetect Works 📋",
-    message: "Yeh 4-step process hai: Start → Upload → AI Analysis → Get Report. Bahut simple!",
+    message: "This is a 4-step process: Start → Upload → AI Analysis → Get Report. Very simple!",
     position: "top"
   },
   {
     selector: ".doctor-model",
     title: "Meet Dr. CareDetect 👩‍⚕️",
-    message: "Main hun aapka AI doctor! Hamesha aapki help ke liye ready hun. Questions puchiye!",
+    message: "That's me - your AI doctor! I'm always ready to help you. Feel free to ask questions!",
     position: "top"
   },
   {
     selector: "footer",
     title: "Footer Information 📞",
-    message: "Yahan aapko contact details, links, aur company information milti hai. Help chahiye to yahan dekh sakte hain!",
+    message: "Here you'll find contact details, links, and company information. Check here if you need help!",
     position: "top"
   },
   {
     selector: ".guide-me-btn",
     title: "Guide Me Button 🎯",
-    message: "Kabhi bhi confused ho to yeh button click kariye! Main phir se guide kar dungi. Tour complete! 🎉",
+    message: "If you're ever confused, click this button! I'll guide you again. Tour complete! 🎉",
     position: "top"
   }
 ];
@@ -114,13 +114,12 @@ export default function OnboardingOverlay({ stepIndex, onNext, onClose }) {
   useEffect(() => {
     let timeout;
     try {
-      // More flexible selector matching
+      // More flexible selector matching with better fallbacks
       let el = document.querySelector(step.selector);
       
-      // Fallback selectors for better matching
+      // Improved fallback selectors for better matching
       if (!el && step.selector.includes('🎮 Games')) {
-        el = document.querySelector('nav button[onclick*="setShowGameHub"]') || 
-            Array.from(document.querySelectorAll('nav button')).find(btn => btn.textContent.includes('Games'));
+        el = Array.from(document.querySelectorAll('nav button')).find(btn => btn.textContent.includes('Games'));
       }
       if (!el && step.selector.includes('3D Model')) {
         el = Array.from(document.querySelectorAll('nav button')).find(btn => btn.textContent.includes('3D Model'));
@@ -138,7 +137,10 @@ export default function OnboardingOverlay({ stepIndex, onNext, onClose }) {
         el = Array.from(document.querySelectorAll('nav button')).find(btn => btn.textContent.includes('Sign Up'));
       }
       if (!el && step.selector === '.navbar-logo') {
-        el = document.querySelector('.flex.items-center.space-x-2') || document.querySelector('header .flex.items-center');
+        el = document.querySelector('header .flex.items-center.space-x-2') || document.querySelector('header span');
+      }
+      if (!el && step.selector === 'nav a[href="#how-it-works"]') {
+        el = Array.from(document.querySelectorAll('nav a')).find(a => a.textContent.includes('How It Works'));
       }
       if (!el && step.selector === '.hero-section button:first-of-type') {
         el = Array.from(document.querySelectorAll('button')).find(btn => btn.textContent.includes('Start Screening'));
@@ -149,11 +151,10 @@ export default function OnboardingOverlay({ stepIndex, onNext, onClose }) {
       if (!el && step.selector === '.hero-section button:nth-of-type(3)') {
         el = Array.from(document.querySelectorAll('button')).find(btn => btn.textContent.includes('Detecting by Sweat'));
       }
-      if (!el && step.selector === '.project-features') {
-        el = document.querySelector('section h2') && Array.from(document.querySelectorAll('h2')).find(h => h.textContent.includes('Project Features'))?.closest('section');
-      }
       if (!el && step.selector === '.games-section') {
-        el = Array.from(document.querySelectorAll('button')).find(btn => btn.textContent.includes('Play Games Now'))?.closest('div');
+        el = Array.from(document.querySelectorAll('button')).find(btn => btn.textContent.includes('Play Games Now'))?.closest('.games-section') ||
+            document.querySelector('.games-section') ||
+            Array.from(document.querySelectorAll('div')).find(div => div.textContent.includes('Interactive Health Games'));
       }
       if (!el && step.selector === '.how-it-works') {
         el = Array.from(document.querySelectorAll('h2')).find(h => h.textContent.includes('How CareDetect Works'))?.closest('section');
@@ -164,107 +165,130 @@ export default function OnboardingOverlay({ stepIndex, onNext, onClose }) {
       if (!el && step.selector === '.guide-me-btn') {
         el = Array.from(document.querySelectorAll('button')).find(btn => btn.textContent.includes('Guide Me'));
       }
+      if (!el && step.selector === 'footer') {
+        el = document.querySelector('footer');
+      }
 
       if (el) {
+        // Scroll element into view
         el.scrollIntoView({ behavior: "smooth", block: "center" });
+        
+        // Add highlight with stronger visual effect
         el.classList.add("onboarding-highlight");
         highlightRef.current = el;
         
-        // Calculate arrow position - improved accuracy
+        // Calculate arrow position - simple and direct
         setTimeout(() => {
           const rect = el.getBoundingClientRect();
           const bubbleRect = speechBubbleRef.current?.getBoundingClientRect();
-          if (bubbleRect) {
-            const isBottom = step.position === 'bottom';
+          
+          if (bubbleRect && rect) {
+            // Arrow from speech bubble to target element
+            const startX = bubbleRect.left + bubbleRect.width - 20;
+            const startY = bubbleRect.top + bubbleRect.height / 2;
+            const endX = rect.left + rect.width / 2;
+            const endY = rect.top + rect.height / 2;
             
-            // Better arrow positioning from bubble edge to element center
+            console.log('Arrow positions calculated:', { 
+              startX: Math.round(startX), 
+              startY: Math.round(startY), 
+              endX: Math.round(endX), 
+              endY: Math.round(endY),
+              bubbleRect: {
+                left: Math.round(bubbleRect.left),
+                top: Math.round(bubbleRect.top),
+                width: Math.round(bubbleRect.width),
+                height: Math.round(bubbleRect.height)
+              },
+              targetRect: {
+                left: Math.round(rect.left),
+                top: Math.round(rect.top),
+                width: Math.round(rect.width),
+                height: Math.round(rect.height)
+              }
+            });
+            
             setArrowPos({
-              startX: bubbleRect.right - 20, // Start from right edge of bubble
-              startY: bubbleRect.top + bubbleRect.height / 2, // Middle of bubble
-              endX: rect.left + rect.width / 2, // Center of target element
-              endY: isBottom ? rect.top - 10 : rect.bottom + 10, // Slightly offset from element
-              isBottom
+              startX,
+              startY,
+              endX,
+              endY
             });
           }
-        }, 300);
+        }, 500); // Reduced timeout for faster arrow appearance
       } else {
-        timeout = setTimeout(() => {
-          onNext();
-        }, 1000);
+        console.log('Element not found for selector:', step.selector);
       }
+      // Removed automatic timeout - now completely user controlled
     } catch (e) {
-      timeout = setTimeout(() => {
-        onNext();
-      }, 1000);
+      // If element not found, just continue without auto-advancing
+      console.log('Element not found for selector:', step.selector);
     }
     
     return () => {
       if (highlightRef.current) {
         highlightRef.current.classList.remove("onboarding-highlight");
       }
-      if (timeout) clearTimeout(timeout);
       setArrowPos(null);
     };
   }, [step.selector, step.position, onNext]);
 
-  // Simple and effective arrow
+  // Simple arrow that actually works
   const Arrow = () => {
     if (!arrowPos) return null;
+    
     const { startX, startY, endX, endY } = arrowPos;
     
-    // Calculate better arrow positioning
-    const deltaX = endX - startX;
-    const deltaY = endY - startY;
-    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-    
-    // Create a smooth curved path
-    const controlX = startX + deltaX * 0.7;
-    const controlY = startY + deltaY * 0.3 - 50; // Add curve
-    
-    const width = Math.abs(endX - startX) + 200;
-    const height = Math.abs(endY - startY) + 200;
-    const left = Math.min(startX, endX) - 100;
-    const top = Math.min(startY, endY) - 100;
-
-    const path = `M${startX - left},${startY - top} Q${controlX - left},${controlY - top} ${endX - left},${endY - top}`;
+    // Calculate distance and angle
+    const dx = endX - startX;
+    const dy = endY - startY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
     
     return (
-      <svg
+      <div
+        className="fixed pointer-events-none z-[10001]"
         style={{
-          position: "fixed",
-          left,
-          top,
-          pointerEvents: "none",
-          zIndex: 10001,
+          left: `${startX}px`,
+          top: `${startY}px`,
+          width: `${distance}px`,
+          height: '4px',
+          transformOrigin: '0 50%',
+          transform: `rotate(${angle}deg)`,
         }}
-        width={width}
-        height={height}
       >
-        <defs>
-          <marker id="arrowhead" markerWidth="15" markerHeight="15" refX="12" refY="7.5" orient="auto">
-            <polygon points="0,0 15,7.5 0,15 3,7.5" fill="#ec4899" />
-          </marker>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-            <feMerge> 
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
-        </defs>
-        <path
-          d={path}
-          stroke="#ec4899"
-          strokeWidth="3"
-          fill="none"
-          markerEnd="url(#arrowhead)"
-          filter="url(#glow)"
-          style={{ 
-            strokeDasharray: "8,4",
-            animation: "dash 1.5s linear infinite"
-          }}
-        />
-      </svg>
+        {/* Arrow line */}
+        <div className="w-full h-full bg-gradient-to-r from-pink-500 to-purple-600 relative">
+          {/* Animated dashes */}
+          <div 
+            className="absolute inset-0 bg-gradient-to-r from-pink-500 to-purple-600"
+            style={{
+              backgroundImage: 'repeating-linear-gradient(90deg, transparent 0px, transparent 8px, white 8px, white 12px)',
+              animation: 'dash-move 2s linear infinite'
+            }}
+          />
+          
+          {/* Arrow head */}
+          <div 
+            className="absolute right-0 top-1/2 transform -translate-y-1/2"
+            style={{
+              width: '0',
+              height: '0',
+              borderLeft: '12px solid #ec4899',
+              borderTop: '8px solid transparent',
+              borderBottom: '8px solid transparent',
+              right: '-6px'
+            }}
+          />
+        </div>
+        
+        <style jsx>{`
+          @keyframes dash-move {
+            0% { background-position: 0px 0px; }
+            100% { background-position: 20px 0px; }
+          }
+        `}</style>
+      </div>
     );
   };
 
@@ -276,24 +300,26 @@ export default function OnboardingOverlay({ stepIndex, onNext, onClose }) {
       style={{ pointerEvents: "auto" }}
     >
       <style jsx>{`
-        @keyframes dash {
-          to {
-            stroke-dashoffset: -24;
-          }
+        @keyframes dash-move {
+          0% { background-position: 0px 0px; }
+          100% { background-position: 20px 0px; }
         }
         .onboarding-highlight {
           position: relative;
           z-index: 10000;
-          box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.8), 0 0 20px rgba(236, 72, 153, 0.5) !important;
-          border-radius: 8px !important;
+          box-shadow: 0 0 0 6px rgba(236, 72, 153, 0.9), 0 0 30px rgba(236, 72, 153, 0.7) !important;
+          border-radius: 12px !important;
           animation: pulse-highlight 2s infinite;
+          background-color: rgba(236, 72, 153, 0.1) !important;
         }
         @keyframes pulse-highlight {
           0%, 100% { 
-            box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.8), 0 0 20px rgba(236, 72, 153, 0.5);
+            box-shadow: 0 0 0 6px rgba(236, 72, 153, 0.9), 0 0 30px rgba(236, 72, 153, 0.7);
+            transform: scale(1);
           }
           50% { 
-            box-shadow: 0 0 0 8px rgba(236, 72, 153, 1), 0 0 30px rgba(236, 72, 153, 0.7);
+            box-shadow: 0 0 0 10px rgba(236, 72, 153, 1), 0 0 40px rgba(236, 72, 153, 0.9);
+            transform: scale(1.02);
           }
         }
       `}</style>
@@ -308,7 +334,7 @@ export default function OnboardingOverlay({ stepIndex, onNext, onClose }) {
       >
         <div className="flex items-center space-x-8 justify-start">
           {/* Doctor Avatar - positioned on left, larger and more visible */}
-          <div className="w-40 h-40 flex-shrink-0 relative bg-white/90 rounded-2xl p-4 shadow-xl border-2 border-pink-200">
+          <div className="w-40 h-40 flex-shrink-0 relative">
             <DoctorModel3D />
           </div>
           

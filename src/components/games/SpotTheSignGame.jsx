@@ -10,11 +10,36 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
   const [gameData, setGameData] = useState(null);
   const [selectedSign, setSelectedSign] = useState(null);
   const [showSignDetails, setShowSignDetails] = useState(false);
+  const [isGeneratingGame, setIsGeneratingGame] = useState(false);
 
   const levels = {
-    easy: { signs: 3, timeLimit: 30, multiplier: 1 },
-    medium: { signs: 5, timeLimit: 25, multiplier: 1.5 },
-    hard: { signs: 7, timeLimit: 20, multiplier: 2 }
+    easy: { 
+      signs: 3, 
+      timeLimit: 30, 
+      multiplier: 1,
+      gameAreaSize: 'h-96',
+      signSize: 'w-8 h-8',
+      breastSize: { width: 300, height: 280 },
+      description: 'Perfect for beginners - larger signs, more time'
+    },
+    medium: { 
+      signs: 5, 
+      timeLimit: 25, 
+      multiplier: 1.5,
+      gameAreaSize: 'h-80',
+      signSize: 'w-6 h-6',
+      breastSize: { width: 280, height: 260 },
+      description: 'Moderate challenge - smaller signs, less time'
+    },
+    hard: { 
+      signs: 7, 
+      timeLimit: 20, 
+      multiplier: 2,
+      gameAreaSize: 'h-72',
+      signSize: 'w-5 h-5',
+      breastSize: { width: 260, height: 240 },
+      description: 'Expert level - tiny signs, minimal time'
+    }
   };
 
   const signTypes = [
@@ -88,18 +113,30 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
     const currentLevel = levels[level];
     const selectedSigns = signTypes.slice(0, currentLevel.signs);
     
-    // Generate positions for signs (avoiding overlap)
+    // Generate positions for signs (avoiding overlap) - simplified for better performance
     const positions = [];
+    const minDistance = level === 'easy' ? 15 : level === 'medium' ? 12 : 10;
+    const marginX = level === 'easy' ? 15 : level === 'medium' ? 12 : 10;
+    const marginY = level === 'easy' ? 25 : level === 'medium' ? 20 : 15;
+    
     for (let i = 0; i < currentLevel.signs; i++) {
       let position;
+      let attempts = 0;
+      const maxAttempts = 30; // Reduced max attempts to prevent hanging
+      
       do {
         position = {
-          x: Math.random() * 70 + 10, // 10-80% from left
-          y: Math.random() * 60 + 20  // 20-80% from top
+          x: Math.random() * (100 - 2 * marginX) + marginX,
+          y: Math.random() * (100 - 2 * marginY) + marginY
         };
-      } while (positions.some(p => 
-        Math.abs(p.x - position.x) < 15 || Math.abs(p.y - position.y) < 15
-      ));
+        attempts++;
+      } while (
+        positions.some(p => 
+          Math.abs(p.x - position.x) < minDistance || Math.abs(p.y - position.y) < minDistance
+        ) && attempts < maxAttempts
+      );
+      
+      // If we can't find a good position after max attempts, use the last generated position
       positions.push(position);
     }
 
@@ -113,24 +150,38 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
   };
 
   // Start game
-  const startGame = () => {
-    const data = generateGameData();
-    setGameData(data);
-    setGameState('playing');
-    setScore(0);
-    setFoundSigns([]);
-    setTimeLeft(levels[level].timeLimit);
+  const startGame = async () => {
+    setIsGeneratingGame(true);
+    
+    // Use setTimeout to allow UI to update before heavy computation
+    setTimeout(() => {
+      try {
+        const data = generateGameData();
+        setGameData(data);
+        setGameState('playing');
+        setScore(0);
+        setFoundSigns([]);
+        setTimeLeft(levels[level].timeLimit);
+      } catch (error) {
+        console.error('Error generating game data:', error);
+        // Fallback to easy mode if there's an error
+        setLevel('easy');
+      } finally {
+        setIsGeneratingGame(false);
+      }
+    }, 100);
   };
 
   // Timer effect
   useEffect(() => {
-    if (gameState === 'playing' && timeLeft > 0) {
+    // Pause timer when sign details are showing
+    if (gameState === 'playing' && timeLeft > 0 && !showSignDetails) {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
       return () => clearTimeout(timer);
     } else if (timeLeft === 0 && gameState === 'playing') {
       endGame();
     }
-  }, [timeLeft, gameState]);
+  }, [timeLeft, gameState, showSignDetails]); // Added showSignDetails dependency
 
   // Handle sign click
   const handleSignClick = (signId, event) => {
@@ -139,7 +190,9 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
     event.stopPropagation();
     
     if (!foundSigns.includes(signId)) {
-      const timeBonus = timeLeft > 20 ? 1.5 : 1;
+      // Level-specific time bonus calculation
+      const timeThreshold = level === 'easy' ? 20 : level === 'medium' ? 15 : 10;
+      const timeBonus = timeLeft > timeThreshold ? 1.5 : 1;
       const points = Math.floor(50 * levels[level].multiplier * timeBonus);
       
       setScore(prev => prev + points);
@@ -158,7 +211,7 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
         )
       }));
 
-      // Auto-hide details after 3 seconds and check if game complete
+      // Auto-hide details after 10 seconds and check if game complete
       setTimeout(() => {
         setShowSignDetails(false);
         setSelectedSign(null);
@@ -167,7 +220,7 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
         if (foundSigns.length + 1 === gameData.signs.length) {
           setTimeout(() => endGame(), 500);
         }
-      }, 3000);
+      }, 10000); // Changed from 3000 to 10000 (10 seconds)
     }
   };
 
@@ -185,7 +238,7 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
   // Menu Screen
   if (gameState === 'menu') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 p-4">
+      <div className="min-h-screen bg-gray-50 p-4">
         <div className="max-w-4xl mx-auto">
           
           {/* Header */}
@@ -200,7 +253,7 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
           </div>
 
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent mb-4">
+            <h1 className="text-4xl font-bold text-pink-600 mb-4">
               🕵️‍♀️ Spot The Sign
             </h1>
             <p className="text-xl text-gray-600">
@@ -220,11 +273,16 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
                     level === levelKey
                       ? 'border-pink-500 bg-pink-50 shadow-lg scale-105'
                       : 'border-gray-200 bg-white hover:border-pink-300 hover:shadow-md'
-                  }`}
-                  onClick={() => setLevel(levelKey)}
+                  } ${isGeneratingGame ? 'pointer-events-none opacity-50' : ''}`}
+                  onClick={() => {
+                    if (!isGeneratingGame) {
+                      setLevel(levelKey);
+                    }
+                  }}
                 >
                   <div className="text-center">
                     <h3 className="text-xl font-bold text-gray-900 mb-2 capitalize">{levelKey}</h3>
+                    <p className="text-xs text-gray-500 mb-3 italic">{levelData.description}</p>
                     <div className="space-y-2 text-sm text-gray-600">
                       <div>Signs to find: <span className="font-semibold text-pink-600">{levelData.signs}</span></div>
                       <div>Time limit: <span className="font-semibold text-purple-600">{levelData.timeLimit}s</span></div>
@@ -247,9 +305,10 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
               <div>
                 <h3 className="font-semibold text-gray-800 mb-2">⏱️ Scoring</h3>
                 <ul className="text-gray-600 text-sm space-y-1">
-                  <li>• Correct spot: +50 points</li>
-                  <li>• Time bonus: +50% if found in first 10s</li>
+                  <li>• Correct spot: +50 points × level multiplier</li>
+                  <li>• Time bonus: +50% for quick finds</li>
                   <li>• Wrong click: -20 points</li>
+                  <li>• {level === 'easy' ? 'Easy: 1x multiplier' : level === 'medium' ? 'Medium: 1.5x multiplier' : 'Hard: 2x multiplier'}</li>
                 </ul>
               </div>
             </div>
@@ -272,9 +331,12 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
           <div className="text-center">
             <button
               onClick={startGame}
-              className="px-12 py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-xl font-bold rounded-2xl shadow-lg hover:scale-105 transition-all duration-300"
+              disabled={isGeneratingGame}
+              className={`px-12 py-4 bg-pink-600 text-white text-xl font-bold rounded-2xl shadow-lg hover:bg-pink-700 transition-all duration-300 ${
+                isGeneratingGame ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              Start Game 🚀
+              {isGeneratingGame ? 'Generating Game... ⏳' : 'Start Game 🚀'}
             </button>
           </div>
         </div>
@@ -285,7 +347,7 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
   // Game Screen
   if (gameState === 'playing') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 p-4">
+      <div className="min-h-screen bg-gray-50 p-4">
         <div className="max-w-6xl mx-auto">
           
           {/* Game Header */}
@@ -300,46 +362,109 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
                 <span className="font-bold text-green-600">{score} pts</span>
               </div>
             </div>
-            <div className="text-sm text-gray-600">
-              Found: {foundSigns.length}/{gameData?.signs.length}
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-gray-600">
+                Found: {foundSigns.length}/{gameData?.signs.length}
+              </div>
+              <div className="text-sm font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded">
+                {level.toUpperCase()} MODE
+              </div>
+              {/* Submit and Back buttons */}
+              <button
+                onClick={endGame}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold"
+              >
+                Submit Game
+              </button>
+              <button
+                onClick={onBack}
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-semibold"
+              >
+                Back to Games
+              </button>
             </div>
           </div>
 
           {/* Game Area */}
           <div className="relative bg-white/90 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/50">
+            {/* Level Indicator */}
+            <div className="absolute top-4 left-4 bg-pink-600 text-white px-3 py-1 rounded-full text-sm font-bold z-10">
+              {level.toUpperCase()} MODE
+            </div>
+            
             <div 
-              className="relative w-full h-96 bg-gradient-to-br from-pink-100 to-purple-100 rounded-2xl overflow-hidden cursor-crosshair"
+              className={`relative w-full ${levels[level].gameAreaSize} bg-pink-50 rounded-2xl overflow-hidden cursor-crosshair`}
               onClick={handleWrongClick}
             >
               {/* Realistic Breast Anatomy Background */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <svg width="300" height="280" viewBox="0 0 300 280" className="opacity-80">
-                  {/* Breast outline */}
-                  <ellipse cx="150" cy="140" rx="120" ry="100" fill="#f8d7da" stroke="#e1a3a8" strokeWidth="2"/>
+                <svg 
+                  width={levels[level].breastSize.width} 
+                  height={levels[level].breastSize.height} 
+                  viewBox={`0 0 ${levels[level].breastSize.width} ${levels[level].breastSize.height}`} 
+                  className="opacity-80"
+                >
+                  {/* Breast outline - scaled based on level */}
+                  <ellipse 
+                    cx={levels[level].breastSize.width / 2} 
+                    cy={levels[level].breastSize.height / 2} 
+                    rx={levels[level].breastSize.width * 0.4} 
+                    ry={levels[level].breastSize.height * 0.36} 
+                    fill="#f8d7da" 
+                    stroke="#e1a3a8" 
+                    strokeWidth="2"
+                  />
                   
                   {/* Nipple area */}
-                  <circle cx="150" cy="120" r="12" fill="#d1949e" stroke="#c1848a" strokeWidth="1"/>
-                  <circle cx="150" cy="120" r="4" fill="#b8838a"/>
+                  <circle 
+                    cx={levels[level].breastSize.width / 2} 
+                    cy={levels[level].breastSize.height * 0.43} 
+                    r="12" 
+                    fill="#d1949e" 
+                    stroke="#c1848a" 
+                    strokeWidth="1"
+                  />
+                  <circle 
+                    cx={levels[level].breastSize.width / 2} 
+                    cy={levels[level].breastSize.height * 0.43} 
+                    r="4" 
+                    fill="#b8838a"
+                  />
                   
                   {/* Areola */}
-                  <circle cx="150" cy="120" r="20" fill="none" stroke="#d1949e" strokeWidth="1" opacity="0.5"/>
+                  <circle 
+                    cx={levels[level].breastSize.width / 2} 
+                    cy={levels[level].breastSize.height * 0.43} 
+                    r="20" 
+                    fill="none" 
+                    stroke="#d1949e" 
+                    strokeWidth="1" 
+                    opacity="0.5"
+                  />
                   
-                  {/* Breast tissue texture */}
-                  <path d="M80 100 Q150 80 220 100" stroke="#e8b4b8" strokeWidth="1" fill="none" opacity="0.3"/>
-                  <path d="M90 160 Q150 140 210 160" stroke="#e8b4b8" strokeWidth="1" fill="none" opacity="0.3"/>
-                  <path d="M100 200 Q150 180 200 200" stroke="#e8b4b8" strokeWidth="1" fill="none" opacity="0.3"/>
+                  {/* Basic breast tissue texture - simplified */}
+                  <path d={`M${levels[level].breastSize.width * 0.27} ${levels[level].breastSize.height * 0.36} Q${levels[level].breastSize.width / 2} ${levels[level].breastSize.height * 0.29} ${levels[level].breastSize.width * 0.73} ${levels[level].breastSize.height * 0.36}`} stroke="#e8b4b8" strokeWidth="1" fill="none" opacity="0.3"/>
+                  <path d={`M${levels[level].breastSize.width * 0.3} ${levels[level].breastSize.height * 0.57} Q${levels[level].breastSize.width / 2} ${levels[level].breastSize.height * 0.5} ${levels[level].breastSize.width * 0.7} ${levels[level].breastSize.height * 0.57}`} stroke="#e8b4b8" strokeWidth="1" fill="none" opacity="0.3"/>
                   
                   {/* Lymph node areas */}
-                  <circle cx="80" cy="80" r="8" fill="#f0c2c6" opacity="0.4"/>
-                  <circle cx="220" cy="80" r="8" fill="#f0c2c6" opacity="0.4"/>
+                  <circle cx={levels[level].breastSize.width * 0.27} cy={levels[level].breastSize.height * 0.29} r="8" fill="#f0c2c6" opacity="0.4"/>
+                  <circle cx={levels[level].breastSize.width * 0.73} cy={levels[level].breastSize.height * 0.29} r="8" fill="#f0c2c6" opacity="0.4"/>
+                  
+                  {/* Level-specific additional elements - simplified */}
+                  {level !== 'easy' && (
+                    <circle cx={levels[level].breastSize.width * 0.4} cy={levels[level].breastSize.height * 0.35} r="3" fill="#f0c2c6" opacity="0.3"/>
+                  )}
+                  {level === 'hard' && (
+                    <circle cx={levels[level].breastSize.width * 0.6} cy={levels[level].breastSize.height * 0.35} r="3" fill="#f0c2c6" opacity="0.3"/>
+                  )}
                 </svg>
               </div>
               
-              {/* Signs */}
+              {/* Signs - size varies by level */}
               {gameData?.signs.map((sign) => (
                 <div
                   key={sign.id}
-                  className={`absolute w-6 h-6 ${sign.color} rounded-full cursor-pointer transition-all duration-300 ${
+                  className={`absolute ${levels[level].signSize} ${sign.color} rounded-full cursor-pointer transition-all duration-300 ${
                     sign.found ? 'scale-150 ring-4 ring-green-400 z-10' : 'hover:scale-125 animate-pulse'
                   }`}
                   style={{
@@ -365,12 +490,18 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
             {/* Sign Details Modal */}
             {showSignDetails && selectedSign && (
               <div className="absolute inset-0 bg-black/50 rounded-3xl flex items-center justify-center z-20">
-                <div className="bg-white rounded-2xl p-6 max-w-md mx-4 shadow-2xl">
-                  <div className="flex items-center mb-4">
-                    <div className={`w-8 h-8 ${selectedSign.color} rounded-full flex items-center justify-center text-white mr-3`}>
-                      {selectedSign.icon}
+                <div className="bg-white rounded-2xl p-6 max-w-md mx-4 shadow-2xl border-2 border-pink-200">
+                  {/* Header with timer pause indicator */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center">
+                      <div className={`w-8 h-8 ${selectedSign.color} rounded-full flex items-center justify-center text-white mr-3`}>
+                        {selectedSign.icon}
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-900">{selectedSign.name}</h3>
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900">{selectedSign.name}</h3>
+                    <div className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                      ⏸️ Timer Paused
+                    </div>
                   </div>
                   
                   <p className="text-gray-700 mb-4">{selectedSign.description}</p>
@@ -387,19 +518,37 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
                     </ul>
                   </div>
                   
-                  <div className="bg-blue-50 p-3 rounded-lg">
+                  <div className="bg-blue-50 p-3 rounded-lg mb-4">
                     <p className="text-sm text-blue-800">{selectedSign.details}</p>
                   </div>
                   
-                  <div className="mt-4 text-center">
+                  {/* Auto-close countdown */}
+                  <div className="text-center mb-4">
+                    <div className="text-xs text-gray-500">
+                      Dialog will auto-close in 10 seconds, or click Continue Game
+                    </div>
+                  </div>
+                  
+                  <div className="flex space-x-3">
                     <button
                       onClick={() => {
                         setShowSignDetails(false);
                         setSelectedSign(null);
                       }}
-                      className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
+                      className="flex-1 px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors font-semibold"
                     >
-                      Continue Game
+                      Continue Game ▶️
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowSignDetails(false);
+                        setSelectedSign(null);
+                        // Show all sign details for reference
+                        alert(`${selectedSign.name}: ${selectedSign.description}\n\nSymptoms: ${selectedSign.symptoms?.join(', ')}\n\nDetails: ${selectedSign.details}`);
+                      }}
+                      className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm"
+                    >
+                      📋 Save Info
                     </button>
                   </div>
                 </div>
@@ -415,7 +564,7 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3">
               <div 
-                className="bg-gradient-to-r from-pink-500 to-purple-600 h-3 rounded-full transition-all duration-300"
+                className="bg-pink-600 h-3 rounded-full transition-all duration-300"
                 style={{ width: `${(foundSigns.length / gameData?.signs.length) * 100}%` }}
               ></div>
             </div>
@@ -431,14 +580,14 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
     const percentage = Math.round((score / totalPossibleScore) * 100);
     
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 p-4">
+      <div className="min-h-screen bg-gray-50 p-4">
         <div className="max-w-4xl mx-auto">
           
           <div className="text-center mb-8">
             <div className="text-6xl mb-4">
               {percentage >= 80 ? '🏆' : percentage >= 60 ? '🥈' : percentage >= 40 ? '🥉' : '💪'}
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent mb-4">
+            <h1 className="text-4xl font-bold text-pink-600 mb-4">
               {percentage >= 80 ? 'Excellent!' : percentage >= 60 ? 'Great Job!' : percentage >= 40 ? 'Good Effort!' : 'Keep Practicing!'}
             </h1>
           </div>
