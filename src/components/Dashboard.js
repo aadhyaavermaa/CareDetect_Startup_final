@@ -358,29 +358,27 @@ const Dashboard = ({ onClose, onLogout, user }) => {
             <div className="flex items-center space-x-4">
               <button
                 onClick={onClose}
-                className="flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition-colors"
+                className="flex items-center space-x-2 text-gray-600 hover:text-pink-600 transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />
                 <span>Back to Home</span>
               </button>
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <Heart className="w-6 h-6 text-white" />
-                </div>
+              <a href="/" className="flex items-center gap-2 group">
+                <img src="/logo192.png" alt="CareDetect" className="h-9 w-9 object-contain flex-shrink-0 transition-transform group-hover:scale-110" />
                 <div>
-                  <h1 className="text-xl font-bold text-gray-900">CareDetect</h1>
+                  <h1 className="text-xl font-bold text-gray-900 group-hover:text-pink-600 transition-colors">CareDetect</h1>
                   <p className="text-xs text-gray-600">Patient Portal</p>
                 </div>
-              </div>
+              </a>
             </div>
 
             {/* Right - User Profile */}
             <div className="relative">
               <button
                 onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                className="flex items-center space-x-3 text-gray-700 hover:text-blue-600 transition-colors p-3 rounded-lg hover:bg-gray-50"
+                className="flex items-center space-x-3 text-gray-700 hover:text-pink-600 transition-colors p-3 rounded-lg hover:bg-gray-50"
               >
-                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center">
                   <User className="w-5 h-5 text-white" />
                 </div>
                 <div className="text-left">
@@ -393,7 +391,7 @@ const Dashboard = ({ onClose, onLogout, user }) => {
               {/* Profile Dropdown */}
               {showProfileDropdown && (
                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50">
-                  <div className="p-6 bg-blue-600 text-white">
+                  <div className="p-6 bg-pink-600 text-white">
                     <div className="flex items-center space-x-4">
                       <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
                         <User className="w-8 h-8 text-white" />
@@ -425,11 +423,11 @@ const Dashboard = ({ onClose, onLogout, user }) => {
                     </div>
                     
                     <div className="border-t pt-3 space-y-2">
-                      <button className="w-full flex items-center space-x-3 text-left text-gray-700 hover:text-blue-600 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                      <button className="w-full flex items-center space-x-3 text-left text-gray-700 hover:text-pink-600 p-2 rounded-lg hover:bg-gray-50 transition-colors">
                         <Settings className="w-4 h-4" />
                         <span>Account Settings</span>
                       </button>
-                      <button className="w-full flex items-center space-x-3 text-left text-gray-700 hover:text-blue-600 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                      <button className="w-full flex items-center space-x-3 text-left text-gray-700 hover:text-pink-600 p-2 rounded-lg hover:bg-gray-50 transition-colors">
                         <Bell className="w-4 h-4" />
                         <span>Notifications</span>
                       </button>
@@ -461,7 +459,7 @@ const Dashboard = ({ onClose, onLogout, user }) => {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                     activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
+                      ? 'border-pink-500 text-pink-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
@@ -506,8 +504,8 @@ const Dashboard = ({ onClose, onLogout, user }) => {
                       +{userData.screeningsThisMonth} this month
                     </p>
                   </div>
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Activity className="w-6 h-6 text-blue-600" />
+                  <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center">
+                    <Activity className="w-6 h-6 text-pink-600" />
                   </div>
                 </div>
               </div>
@@ -580,10 +578,10 @@ const Dashboard = ({ onClose, onLogout, user }) => {
                         <div key={screening.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                           <div className="flex items-center space-x-4">
                             <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                              screening.type.includes('Sweat') ? 'bg-blue-100' : 'bg-purple-100'
+                              screening.type.includes('Sweat') ? 'bg-pink-100' : 'bg-purple-100'
                             }`}>
                               {screening.type.includes('Sweat') ? 
-                                <Droplets className={`w-5 h-5 ${screening.type.includes('Sweat') ? 'text-blue-600' : 'text-purple-600'}`} /> :
+                                <Droplets className={`w-5 h-5 ${screening.type.includes('Sweat') ? 'text-pink-600' : 'text-purple-600'}`} /> :
                                 <BarChart3 className="w-5 h-5 text-purple-600" />
                               }
                             </div>
@@ -604,7 +602,7 @@ const Dashboard = ({ onClose, onLogout, user }) => {
                       ))}
                       <button 
                         onClick={() => setActiveTab('screenings')}
-                        className="w-full text-center text-blue-600 hover:text-blue-700 font-medium py-2"
+                        className="w-full text-center text-pink-600 hover:text-pink-700 font-medium py-2"
                       >
                         View All Screenings
                       </button>
@@ -614,7 +612,7 @@ const Dashboard = ({ onClose, onLogout, user }) => {
                       <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <h4 className="text-lg font-medium text-gray-900 mb-2">No screenings yet</h4>
                       <p className="text-gray-600 mb-4">Start your health journey with your first screening</p>
-                      <button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                      <button className="bg-pink-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-pink-700 transition-colors">
                         Start First Screening
                       </button>
                     </div>
@@ -628,7 +626,7 @@ const Dashboard = ({ onClose, onLogout, user }) => {
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
                   <div className="space-y-3">
-                    <button className="w-full bg-blue-600 text-white p-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2">
+                    <button className="w-full bg-pink-600 text-white p-3 rounded-lg font-medium hover:bg-pink-700 transition-colors flex items-center justify-center space-x-2">
                       <Droplets className="w-5 h-5" />
                       <span>New Biomarker Test</span>
                     </button>
@@ -650,9 +648,9 @@ const Dashboard = ({ onClose, onLogout, user }) => {
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Health Education</h3>
                   <div className="space-y-3">
-                    <div className="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-                      <p className="font-medium text-blue-900 text-sm">Monthly Self-Exam</p>
-                      <p className="text-blue-800 text-xs mt-1">Perform breast self-examination 7-10 days after your period</p>
+                    <div className="p-3 bg-pink-50 rounded-lg border-l-4 border-pink-500">
+                      <p className="font-medium text-pink-900 text-sm">Monthly Self-Exam</p>
+                      <p className="text-pink-800 text-xs mt-1">Perform breast self-examination 7-10 days after your period</p>
                     </div>
                     <div className="p-3 bg-red-50 rounded-lg border-l-4 border-red-500">
                       <p className="font-medium text-red-900 text-sm">Warning Signs</p>
@@ -681,7 +679,7 @@ const Dashboard = ({ onClose, onLogout, user }) => {
                     placeholder="Search screenings..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
                   />
                 </div>
                 <div className="relative">
@@ -689,7 +687,7 @@ const Dashboard = ({ onClose, onLogout, user }) => {
                   <select
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value)}
-                    className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+                    className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 appearance-none bg-white"
                   >
                     <option value="all">All Results</option>
                     <option value="normal">Normal</option>
@@ -712,10 +710,10 @@ const Dashboard = ({ onClose, onLogout, user }) => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
                           <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                            screening.type.includes('Sweat') ? 'bg-blue-100' : 'bg-purple-100'
+                            screening.type.includes('Sweat') ? 'bg-pink-100' : 'bg-purple-100'
                           }`}>
                             {screening.type.includes('Sweat') ? 
-                              <Droplets className="w-6 h-6 text-blue-600" /> :
+                              <Droplets className="w-6 h-6 text-pink-600" /> :
                               <BarChart3 className="w-6 h-6 text-purple-600" />
                             }
                           </div>
@@ -740,7 +738,7 @@ const Dashboard = ({ onClose, onLogout, user }) => {
                           }`}>
                             {screening.status}
                           </div>
-                          <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors">
+                          <button className="p-2 text-gray-400 hover:text-pink-600 transition-colors">
                             <ExternalLink className="w-4 h-4" />
                           </button>
                         </div>
@@ -762,34 +760,34 @@ const Dashboard = ({ onClose, onLogout, user }) => {
         {activeTab === 'calendar' && (
           <div className="space-y-6">
             {/* Calendar Header */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Testing Calendar</h3>
-                <div className="flex items-center space-x-4">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-base font-semibold text-gray-900">Testing Calendar</h3>
+                <div className="flex items-center space-x-1">
                   <button
                     onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1))}
-                    className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
                   >
-                    <ChevronLeft className="w-5 h-5" />
+                    <ChevronLeft className="w-3 h-3" />
                   </button>
-                  <span className="font-semibold text-gray-900 min-w-32 text-center">
-                    {selectedMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  <span className="font-semibold text-gray-900 min-w-24 text-center text-xs">
+                    {selectedMonth.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                   </span>
                   <button
                     onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1))}
-                    className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
                   >
-                    <ChevronRight className="w-5 h-5" />
+                    <ChevronRight className="w-3 h-3" />
                   </button>
                 </div>
               </div>
 
               {/* Calendar Grid */}
-              <div className="grid grid-cols-7 gap-1">
+              <div className="grid grid-cols-7 gap-0.5 bg-gray-100 p-1.5 rounded">
                 {/* Day Headers */}
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                  <div key={day} className="p-3 text-center text-sm font-medium text-gray-500">
-                    {day}
+                  <div key={day} className="p-1 text-center text-xs font-bold text-gray-500 bg-white">
+                    {day.slice(0, 1)}
                   </div>
                 ))}
                 
@@ -797,32 +795,39 @@ const Dashboard = ({ onClose, onLogout, user }) => {
                 {generateCalendar(selectedMonth).map((day, index) => (
                   <div key={index} className="aspect-square">
                     {day ? (
-                      <div className={`w-full h-full flex items-center justify-center text-sm relative ${
-                        day.isToday ? 'bg-blue-600 text-white rounded-lg font-semibold' :
-                        day.hasScreening ? 'bg-green-100 text-green-800 rounded-lg font-medium' :
-                        'text-gray-700 hover:bg-gray-100 rounded-lg'
+                      <div className={`w-full h-full flex flex-col items-center justify-center text-xs relative rounded overflow-hidden transition-all ${
+                        day.isToday ? 'bg-gradient-to-br from-pink-500 to-pink-600 text-white font-bold' :
+                        day.hasScreening ? 'bg-gradient-to-br from-pink-100 to-pink-50 text-pink-900 font-semibold' :
+                        'bg-white text-gray-600 hover:bg-gray-50'
                       }`}>
-                        {day.day}
-                        {day.hasScreening && !day.isToday && (
-                          <div className="absolute bottom-1 right-1 w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span className="leading-tight">{day.day}</span>
+                        {day.hasScreening && (
+                          <div className="flex flex-col items-center gap-0.5 mt-0.5">
+                            <Flame className="w-2.5 h-2.5 text-orange-500 flex-shrink-0" />
+                            <img 
+                              src="/logo192.png" 
+                              alt="CareDetect" 
+                              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                            />
+                          </div>
                         )}
                       </div>
                     ) : (
-                      <div className="w-full h-full"></div>
+                      <div className="w-full h-full bg-gray-50"></div>
                     )}
                   </div>
                 ))}
               </div>
 
               {/* Legend */}
-              <div className="flex items-center justify-center space-x-6 mt-6 pt-6 border-t border-gray-200">
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-blue-600 rounded"></div>
-                  <span className="text-sm text-gray-600">Today</span>
+              <div className="flex items-center justify-center space-x-4 mt-3 pt-3 border-t border-gray-200 text-xs">
+                <div className="flex items-center space-x-1.5">
+                  <div className="w-2.5 h-2.5 bg-gradient-to-br from-pink-500 to-pink-600 rounded"></div>
+                  <span className="text-gray-600">Today</span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-green-100 border border-green-300 rounded"></div>
-                  <span className="text-sm text-gray-600">Screening Day</span>
+                <div className="flex items-center space-x-1.5">
+                  <div className="w-2.5 h-2.5 bg-pink-200 border border-pink-300 rounded"></div>
+                  <span className="text-gray-600">Testing Day</span>
                 </div>
               </div>
             </div>
@@ -848,8 +853,8 @@ const Dashboard = ({ onClose, onLogout, user }) => {
               </div>
               
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Target className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <Target className="w-6 h-6 text-pink-600" />
                 </div>
                 <h4 className="text-2xl font-bold text-gray-900">{userData.totalScreenings}</h4>
                 <p className="text-gray-600">Total Tests</p>
@@ -870,7 +875,7 @@ const Dashboard = ({ onClose, onLogout, user }) => {
                   <input
                     type="text"
                     value={userData.name}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
                     readOnly
                   />
                 </div>
@@ -879,7 +884,7 @@ const Dashboard = ({ onClose, onLogout, user }) => {
                   <input
                     type="email"
                     value={userData.email}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
                     readOnly
                   />
                 </div>

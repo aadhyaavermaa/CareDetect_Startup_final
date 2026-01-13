@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Heart, Shield, Users, ArrowRight, Play, CheckCircle, User, LogOut } from 'lucide-react';
 import { BreastModel } from './components/BreastModel';
 import OnboardingOverlay from "./components/OnboardingOverlay";
@@ -26,6 +26,9 @@ export default function BreastCancerLandingPage() {
   const [showDashboard, setShowDashboard] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const speechUtteranceRef = useRef(null);
 
   // Disable body scroll when modals are open
   useEffect(() => {
@@ -63,6 +66,56 @@ export default function BreastCancerLandingPage() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Audio cleanup on unmount
+  useEffect(() => {
+    return () => {
+      window.speechSynthesis.cancel();
+    };
+  }, []);
+
+  // Generate listening script from step content
+  const generateListeningScript = () => {
+    return `Step 1: Start Screening. Click on Start Screening and answer a few simple questions to begin your health checkup journey. Step 2: Upload or Capture Image. Upload your medical image or capture a new one using your phone or computer. Step 3: AI Analysis. Our advanced AI instantly analyzes your image and provides accurate results with easy to understand feedback. Step 4: Get Personalized Report. Download or view your personalized report and get recommendations for next steps.`;
+  };
+
+  // Audio playback handlers
+  const handlePlayAudio = () => {
+    if (isPaused) {
+      window.speechSynthesis.resume();
+      setIsPaused(false);
+      return;
+    }
+
+    const script = generateListeningScript();
+    const utterance = new SpeechSynthesisUtterance(script);
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    utterance.onend = () => {
+      setIsListening(false);
+      setIsPaused(false);
+    };
+
+    speechUtteranceRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
+    setIsListening(true);
+    setIsPaused(false);
+  };
+
+  const handlePauseAudio = () => {
+    if (isListening) {
+      window.speechSynthesis.pause();
+      setIsPaused(true);
+    }
+  };
+
+  const handleStopAudio = () => {
+    window.speechSynthesis.cancel();
+    setIsListening(false);
+    setIsPaused(false);
+  };
+
   const handleLogout = async () => {
     await logout();
   };
@@ -73,12 +126,10 @@ export default function BreastCancerLandingPage() {
       <header className="bg-white/95 backdrop-blur-sm border-b border-pink-100 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Heart className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-bold text-gray-900">CareDetect</span>
-            </div>
+            <a href="#" className="flex items-center gap-2 group">
+              <img src="/logo192.png" alt="CareDetect" className="h-9 w-9 object-contain flex-shrink-0 transition-transform group-hover:scale-110" />
+              <span className="text-2xl font-bold text-gray-900 group-hover:text-pink-600 transition-colors">CareDetect</span>
+            </a>
             
             <nav className="hidden md:flex space-x-8">
               <a href="#features" className="text-gray-600 hover:text-pink-600 transition-colors">Features</a>
@@ -232,22 +283,6 @@ export default function BreastCancerLandingPage() {
                 >
                   Detecting by Sweat
                 </button>
-              </div>
-              
-              {/* Trust Indicators */}
-              <div className="flex flex-wrap gap-6 text-sm text-gray-600">
-                <div className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  FDA Approved
-                </div>
-                <div className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  92.8% Accuracy
-                </div>
-                <div className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  Instant Results
-                </div>
               </div>
             </div>
             
@@ -451,6 +486,50 @@ export default function BreastCancerLandingPage() {
 
             {/* Right side - Steps */}
             <div className="space-y-6">
+              {/* Audio Listening Controls */}
+              <div className="flex items-center gap-3 bg-gradient-to-r from-pink-50 to-purple-50 border border-pink-200 rounded-full px-4 py-3 shadow-sm hover:shadow-md transition-shadow">
+                <span className="text-sm font-semibold text-pink-700">Listen</span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handlePlayAudio}
+                    disabled={isListening && !isPaused}
+                    className="flex items-center justify-center w-8 h-8 bg-pink-600 text-white rounded-full hover:bg-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Play audio explanation of how CareDetect works"
+                    title="Play"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={handlePauseAudio}
+                    disabled={!isListening}
+                    className="flex items-center justify-center w-8 h-8 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Pause audio"
+                    title="Pause"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={handleStopAudio}
+                    disabled={!isListening && !isPaused}
+                    className="flex items-center justify-center w-8 h-8 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Stop audio"
+                    title="Stop"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M6 6h12v12H6z" />
+                    </svg>
+                  </button>
+                </div>
+                {isListening && (
+                  <span className="text-xs text-pink-600 font-medium ml-2 animate-pulse">Listening...</span>
+                )}
+              </div>
+
+              {/* 4 Steps */}
               <div className="flex items-start space-x-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                   1
@@ -581,12 +660,10 @@ export default function BreastCancerLandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <Heart className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-lg font-bold">CareDetect</span>
-              </div>
+              <a href="#" className="flex items-center gap-2 mb-4 group">
+                <img src="/logo192.png" alt="CareDetect" className="h-9 w-9 object-contain flex-shrink-0 transition-transform group-hover:scale-110" />
+                <span className="text-lg font-bold text-white group-hover:text-pink-300 transition-colors">CareDetect</span>
+              </a>
               <p className="text-gray-400">
                 Empowering women with advanced breast cancer detection technology for better health outcomes.
               </p>
