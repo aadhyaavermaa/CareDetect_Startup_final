@@ -71,7 +71,7 @@ const BreastCancerScreening = ({ onBack }) => {
     setTimeout(() => {
       setIsAnalyzing(false);
       setResult('Your Risk Category: Average/Lower Risk');
-      setConfidence('85%');
+      setConfidence(85);
       setCurrentStep(4);
       
       // Save test strip results to localStorage
@@ -144,7 +144,7 @@ const BreastCancerScreening = ({ onBack }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 font-sans">
+    <div className="bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 font-sans">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-md border-b border-pink-100 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 py-4">
@@ -352,7 +352,7 @@ const BreastCancerScreening = ({ onBack }) => {
                     style={{ width: `${confidence}%` }}
                   ></div>
                 </div>
-                <p className="text-lg font-semibold">{confidence.toFixed(1)}%</p>
+                <p className="text-lg font-semibold">{Number(confidence).toFixed(1)}%</p>
               </div>
               
               <div className={`rounded-lg p-4 mb-6 ${

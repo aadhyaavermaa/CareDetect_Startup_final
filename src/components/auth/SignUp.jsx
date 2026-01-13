@@ -1,31 +1,86 @@
 import React, { useState } from 'react';
-<<<<<<< HEAD
-=======
-import { Mail, Lock, Eye, EyeOff, User } from "lucide-react";
->>>>>>> 4e6b6f0fa18ad617077e2b963f406bb0422d11d4
+import { Mail, Lock, Eye, EyeOff, User, AlertCircle, CheckCircle } from "lucide-react";
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function SignUp({ onSwitch }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState({ type: '', text: '' });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Simulate signup success: close modal or show success (call onSwitch if needed)
-    if (typeof window !== 'undefined') {
-      // Try to close modal if possible
-      const closeBtn = document.querySelector('.fixed .absolute.top-4.right-4');
-      if (closeBtn) closeBtn.click();
+  const { signup } = useAuth();
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+    // Clear messages when user starts typing
+    if (message.text) {
+      setMessage({ type: '', text: '' });
     }
-    // Optionally, show a toast or message here
   };
+
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      setMessage({ type: 'error', text: 'Name is required' });
+      return false;
+    }
+    if (!formData.email.trim()) {
+      setMessage({ type: 'error', text: 'Email is required' });
+      return false;
+    }
+    if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      setMessage({ type: 'error', text: 'Please enter a valid email' });
+      return false;
+    }
+    if (formData.password.length < 6) {
+      setMessage({ type: 'error', text: 'Password must be at least 6 characters' });
+      return false;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setMessage({ type: 'error', text: 'Passwords do not match' });
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+    
+    try {
+      const result = await signup(formData);
+      
+      if (result.success) {
+        setMessage({ type: 'success', text: 'Account created successfully! Welcome to CareDetect!' });
+        
+        // Close modal after 2 seconds
+        setTimeout(() => {
+          const closeBtn = document.querySelector('[data-modal-close]');
+          if (closeBtn) closeBtn.click();
+        }, 2000);
+      } else {
+        setMessage({ type: 'error', text: result.error || 'Failed to create account' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Network error. Please try again.' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-<<<<<<< HEAD
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-200 via-purple-100 to-blue-200">
-      <div className="backdrop-blur-xl bg-white/60 border border-pink-100 rounded-3xl shadow-2xl p-10 w-full max-w-md flex flex-col items-center animate-fade-in">
-        <h2 className="text-3xl font-extrabold text-pink-600 mb-8 font-lexend tracking-tight drop-shadow-lg text-center">Create Your Account</h2>
-        <form className="w-full flex flex-col gap-6" onSubmit={handleSubmit}>
-=======
-    <div className="w-full max-w-md bg-gradient-to-br from-white via-pink-50 to-purple-50 backdrop-blur-2xl border-2 border-pink-200 shadow-xl p-6 animate-fade-in rounded-2xl">
+    <div className="w-full">
       
       {/* Logo */}
       <div className="flex justify-center mb-6">
@@ -44,51 +99,132 @@ export default function SignUp({ onSwitch }) {
         </div>
       </div>
       
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-800 mb-2">
+      <div className="text-center mb-6">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 text-transparent bg-clip-text mb-2">
           Create Account
         </h2>
-        <div className="h-1 w-16 bg-gradient-to-r from-pink-400 to-purple-600 mx-auto rounded-full mb-3"></div>
         <p className="text-gray-600 text-sm">Join us on your health journey</p>
       </div>
 
-      {/* Form */}
+      {/* Message Display */}
+      {message.text && (
+        <div className={`mb-4 p-3 rounded-lg flex items-center gap-2 ${
+          message.type === 'error' 
+            ? 'bg-red-50 text-red-700 border border-red-200' 
+            : 'bg-green-50 text-green-700 border border-green-200'
+        }`}>
+          {message.type === 'error' ? (
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          ) : (
+            <CheckCircle className="w-4 h-4 flex-shrink-0" />
+          )}
+          <span className="text-sm">{message.text}</span>
+        </div>
+      )}
+
       <form className="space-y-4" onSubmit={handleSubmit}>
-        
-        {/* Name */}
-        <div className="group">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
->>>>>>> 4e6b6f0fa18ad617077e2b963f406bb0422d11d4
-          <div className="relative">
-            <input type="text" required placeholder="Name" className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-purple-400 transition text-gray-900" />
-          </div>
-          <div className="relative">
-            <input type="email" required placeholder="Email" className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-purple-400 transition text-gray-900" />
-          </div>
-          <div className="relative">
-            <input type={showPassword ? 'text' : 'password'} required placeholder="Password" className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-purple-400 transition text-gray-900" />
-            <button type="button" className="absolute right-4 top-3 text-gray-400 hover:text-purple-500" onClick={() => setShowPassword(v => !v)}>
-              {showPassword ? (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10 0-1.657.402-3.221 1.125-4.575M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm2.121-2.121A9.969 9.969 0 0122 12c0 5.523-4.477 10-10 10S2 17.523 2 12c0-2.21.896-4.21 2.343-5.657" /></svg>
-              )}
-            </button>
-          </div>
-          <div className="relative">
-            <input type={showConfirm ? 'text' : 'password'} required placeholder="Confirm Password" className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-purple-400 transition text-gray-900" />
-            <button type="button" className="absolute right-4 top-3 text-gray-400 hover:text-purple-500" onClick={() => setShowConfirm(v => !v)}>
-              {showConfirm ? (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10 0-1.657.402-3.221 1.125-4.575M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm2.121-2.121A9.969 9.969 0 0122 12c0 5.523-4.477 10-10 10S2 17.523 2 12c0-2.21.896-4.21 2.343-5.657" /></svg>
-              )}
-            </button>
-          </div>
-          <button type="submit" className="w-full py-3 rounded-lg bg-purple-600 text-white font-semibold hover:bg-purple-700 transition">Sign Up</button>
-        </form>
-        <div className="mt-5 text-gray-500 text-sm">Already have an account? <button className="text-purple-600 font-semibold hover:underline" onClick={onSwitch}>Sign In</button></div>
+        <div className="relative group">
+          <User className="absolute left-4 top-3.5 text-gray-400 group-hover:text-pink-500 transition" />
+          <input 
+            type="text" 
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            required 
+            placeholder="Full Name" 
+            className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/70 border border-gray-300 focus:ring-2 focus:ring-pink-400 outline-none transition text-gray-900 shadow-sm"
+            disabled={isLoading}
+          />
+        </div>
+
+        <div className="relative group">
+          <Mail className="absolute left-4 top-3.5 text-gray-400 group-hover:text-pink-500 transition" />
+          <input 
+            type="email" 
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            required 
+            placeholder="Email Address" 
+            className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/70 border border-gray-300 focus:ring-2 focus:ring-pink-400 outline-none transition text-gray-900 shadow-sm"
+            disabled={isLoading}
+          />
+        </div>
+
+        <div className="relative group">
+          <Lock className="absolute left-4 top-3.5 text-gray-400 group-hover:text-pink-500 transition" />
+          <input 
+            type={showPassword ? 'text' : 'password'} 
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            required 
+            placeholder="Password (min 6 characters)" 
+            className="w-full pl-12 pr-12 py-3 rounded-xl bg-white/70 border border-gray-300 focus:ring-2 focus:ring-pink-400 outline-none transition text-gray-900 shadow-sm"
+            disabled={isLoading}
+          />
+          <button 
+            type="button" 
+            className="absolute right-4 top-3.5 text-gray-400 hover:text-purple-500 transition" 
+            onClick={() => setShowPassword(!showPassword)}
+            disabled={isLoading}
+          >
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
+        </div>
+
+        <div className="relative group">
+          <Lock className="absolute left-4 top-3.5 text-gray-400 group-hover:text-pink-500 transition" />
+          <input 
+            type={showConfirm ? 'text' : 'password'} 
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            required 
+            placeholder="Confirm Password" 
+            className="w-full pl-12 pr-12 py-3 rounded-xl bg-white/70 border border-gray-300 focus:ring-2 focus:ring-pink-400 outline-none transition text-gray-900 shadow-sm"
+            disabled={isLoading}
+          />
+          <button 
+            type="button" 
+            className="absolute right-4 top-3.5 text-gray-400 hover:text-purple-500 transition" 
+            onClick={() => setShowConfirm(!showConfirm)}
+            disabled={isLoading}
+          >
+            {showConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
+        </div>
+
+        <button 
+          type="submit" 
+          disabled={isLoading}
+          className={`w-full py-3 rounded-xl font-semibold shadow-lg transition-all duration-300 ${
+            isLoading 
+              ? 'bg-gray-400 cursor-not-allowed' 
+              : 'bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:scale-[1.02]'
+          }`}
+        >
+          {isLoading ? (
+            <div className="flex items-center justify-center gap-2">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              Creating Account...
+            </div>
+          ) : (
+            'Create Account'
+          )}
+        </button>
+      </form>
+
+      <div className="mt-6 text-center text-gray-600 text-sm">
+        Already have an account?
+        <button
+          className="text-pink-600 font-semibold hover:underline ml-1"
+          onClick={onSwitch}
+          disabled={isLoading}
+        >
+          Sign In
+        </button>
       </div>
     </div>
   );
-} 
+}

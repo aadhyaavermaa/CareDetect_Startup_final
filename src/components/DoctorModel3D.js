@@ -29,7 +29,7 @@ export default function DoctorModel3D() {
         <Suspense fallback={null}>
           <DoctorModel />
         </Suspense>
-        <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={2} />
+        <OrbitControls enableZoom={false} enablePan={false} autoRotate={false} />
       </Canvas>
     </div>
   );

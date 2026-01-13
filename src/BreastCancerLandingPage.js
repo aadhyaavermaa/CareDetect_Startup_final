@@ -1,772 +1,263 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Heart, Shield, Zap, Users, ArrowRight, Play, CheckCircle, Star, AlertTriangle, User, Users as UsersIcon, Droplets, UserPlus, UserCircle, RotateCcw, Pause, ArrowRightCircle } from 'lucide-react';
-import BreastCancerScreening from './BreastCancerScreening';
-import DoctorScene from './components/DoctorModel';
+import { Heart, Shield, Users, ArrowRight, Play, CheckCircle, User, LogOut } from 'lucide-react';
 import { BreastModel } from './components/BreastModel';
-import { speak } from './components/TextToSpeech';
-import SweatBiomarkerDetection from './SweatBiomarkerDetection';
-import Login from './components/auth/Login';
-import SignUp from './components/auth/SignUp';
 import OnboardingOverlay from "./components/OnboardingOverlay";
-import DoctorModel from './components/DoctorModel';
+import GeneticRiskForm from './components/breastcancer/GeneticRiskForm';
+import AuthModal from './components/AuthModal';
+import TermsModal from './components/TermsModal';
+import BreastCancerRiskAssessment from './components/BreastCancerRiskAssessment';
+import DoctorModel3D from './components/DoctorModel3D';
+import GameHub from './components/games/GameHub';
+import BreastCancerScreening from './BreastCancerScreening';
+import Dashboard from './components/Dashboard';
+import { useAuth } from './contexts/AuthContext';
 
 export default function BreastCancerLandingPage() {
+  const { user, logout, isAuthenticated } = useAuth();
 
   // 🌟 ALL HOOKS MUST BE INSIDE THE COMPONENT
   const [showRiskModal, setShowRiskModal] = useState(false);
   const [authModal, setAuthModal] = useState(null);
-
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
-
-  const [showFamilyDashboard, setShowFamilyDashboard] = useState(false);
-
-  const [isVisible, setIsVisible] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [showDoctorModel, setShowDoctorModel] = useState(false);
+  const [showGeneticRiskForm, setShowGeneticRiskForm] = useState(false);
+  const [showBreastModel, setShowBreastModel] = useState(false);
+  const [showGameHub, setShowGameHub] = useState(false);
   const [showSweatDetection, setShowSweatDetection] = useState(false);
-
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-
+  const [showDashboard, setShowDashboard] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(null);
 
-  // TEXT TO SPEECH FUNCTIONS
-  const handlePlay = () => {
-    speak("How CareDetect Works section audio playing...");
-    setIsSpeaking(true);
-    setIsPaused(false);
-  };
-
-  const handlePause = () => {
-    window.speechSynthesis.pause();
-    setIsPaused(true);
-  };
-
-  const handleResume = () => {
-    window.speechSynthesis.resume();
-    setIsPaused(false);
-  };
+  // Disable body scroll when modals are open
+  useEffect(() => {
+    if (showGameHub || showSweatDetection || showDashboard) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showGameHub, showSweatDetection, showDashboard]);
 
   // PAGE ANIMATION
   useEffect(() => {
-    setTimeout(() => {
-      setIsVisible(true);
+    const timer = setTimeout(() => {
+      // Component loaded animation can be added here if needed
     }, 300);
+    return () => clearTimeout(timer);
   }, []);
 
-
-function FamilyHealthDashboard({ open, onClose }) {
-  const [family, setFamily] = useState([
-    { relation: 'Grandmother', cancer: false, age: '', genetic: false, risk: [] },
-    { relation: 'Mother', cancer: false, age: '', genetic: false, risk: [] },
-    { relation: 'You', cancer: false, age: '', genetic: false, risk: [] },
-  ]);
-  const [selected, setSelected] = useState(2); // Default to 'You'
-
-  // Controlled input states
-  const member = family[selected];
-
-  // Risk calculation logic
-  function calculateRisk() {
-    let risk = 12; // baseline risk %
-    let firstDegree = 0;
-    let extra = 0;
-    family.forEach((m, idx) => {
-      if (m.cancer) {
-        if (m.relation === 'Mother' || m.relation === 'Sister' || m.relation === 'You') firstDegree++;
-        else extra++;
-      }
-    });
-    if (firstDegree > 0) risk += 20;
-    if (firstDegree > 1) risk += 10 * (firstDegree - 1);
-    if (extra > 0) risk += 5 * extra;
-    if (member.age && Number(member.age) < 50) risk += 10;
-    if (member.genetic) risk += 10;
-    if (member.risk.includes('Smoking')) risk += 5;
-    if (member.risk.includes('Drinking')) risk += 5;
-    if (member.risk.includes('Lifestyle')) risk += 5;
-    return Math.min(Math.round(risk), 99);
-  }
-
-  const riskScore = calculateRisk();
-
-  // Handlers
-  function updateField(field, value) {
-    setFamily(fam => fam.map((m, i) => i === selected ? { ...m, [field]: value } : m));
-  }
-  function updateRisk(factor) {
-    setFamily(fam => fam.map((m, i) => i === selected ? { ...m, risk: m.risk.includes(factor) ? m.risk.filter(f => f !== factor) : [...m.risk, factor] } : m));
-  }
-  function updateRelation(val) {
-    setFamily(fam => fam.map((m, i) => i === selected ? { ...m, relation: val } : m));
-  }
-
-  // Helper for relation icon
-  function getRelationIcon(relation, selected) {
-    const base = 'inline w-5 h-5';
-    switch (relation) {
-      case 'Grandmother':
-        return <UserPlus className={base + (selected ? ' text-pink-500' : ' text-pink-400')} />;
-      case 'Mother':
-        return <UserCircle className={base + (selected ? ' text-purple-500' : ' text-pink-400')} />;
-      case 'Sister':
-        return <UsersIcon className={base + (selected ? ' text-pink-500' : ' text-pink-400')} />;
-      case 'You':
-        return <User className={base + (selected ? ' text-purple-600' : ' text-purple-400')} />;
-      default:
-        return <UsersIcon className={base + (selected ? ' text-pink-500' : ' text-pink-400')} />;
-    }
-  }
-
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
-      <div className="backdrop-blur-2xl bg-white/80 border border-pink-100 rounded-3xl shadow-2xl p-0 w-full max-w-2xl flex flex-col items-center animate-fade-in relative overflow-y-auto max-h-screen" onClick={e => e.stopPropagation()} style={{boxShadow: '0 8px 32px 0 rgba(255, 182, 193, 0.25)'}}>
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-pink-500 text-2xl font-bold">&times;</button>
-        <div className="p-8 w-full flex flex-col items-center">
-          <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600 mb-6 font-lexend tracking-tight drop-shadow-lg text-center" style={{letterSpacing: '0.03em'}}>Family Health Dashboard</h2>
-          {/* Family Tree Visualizer */}
-          <div className="w-full flex flex-col items-center mb-8">
-            <div className="flex flex-col items-center gap-3">
-              {family.map((m, idx) => (
-                <div
-                  key={idx}
-                  className={`flex items-center gap-3 px-6 py-2 rounded-xl cursor-pointer transition-all duration-200
-                    ${selected === idx
-                      ? 'bg-gradient-to-r from-pink-100/80 to-purple-100/80 shadow-xl scale-105 ring-2 ring-pink-400/60'
-                      : 'hover:bg-pink-50 hover:scale-105 hover:shadow-lg'}
-                  `}
-                  onClick={() => setSelected(idx)}
-                  style={{ minWidth: 220 }}
-                >
-                  <span className={`text-lg font-bold flex items-center gap-2 ${selected === idx ? 'text-pink-600' : 'text-gray-700'}`}
-                    style={{ letterSpacing: '0.01em' }}
-                  >
-                    {getRelationIcon(m.relation, selected === idx)}
-                    {m.relation}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <div className="mt-2 text-xs text-gray-500">Click a family member to edit their info. (Add more coming soon!)</div>
-          </div>
-          {/* Minimal Data Entry */}
-          <div className="w-full flex flex-col gap-6 mb-8 max-w-md">
-            <div className="flex gap-3 items-center">
-              <span className="font-semibold text-gray-800">Relation:</span>
-              <select className="rounded-xl px-3 py-2 border border-pink-200 bg-white/60 backdrop-blur-md shadow-inner focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all" value={member.relation} onChange={e => updateRelation(e.target.value)}>
-                <option>Mother</option>
-                <option>Sister</option>
-                <option>Grandmother</option>
-                <option>You</option>
-                <option>Other</option>
-              </select>
-            </div>
-            <CustomCheckbox
-              label="Breast Cancer?"
-              checked={member.cancer}
-              onChange={e => updateField('cancer', e.target.checked)}
-            />
-            <div className="flex gap-3 items-center">
-              <span className="font-semibold text-gray-800">Age at Diagnosis:</span>
-              <input type="number" min="0" className="rounded-xl px-3 py-2 border border-pink-200 bg-white/60 backdrop-blur-md shadow-inner focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all w-28" value={member.age} onChange={e => updateField('age', e.target.value)} />
-            </div>
-            <CustomCheckbox
-              label="Genetic Testing?"
-              checked={member.genetic}
-              onChange={e => updateField('genetic', e.target.checked)}
-            />
-            <div className="flex gap-3 items-center flex-wrap">
-              <span className="font-semibold text-gray-800">Risk Factors:</span>
-              {['Smoking', 'Drinking', 'Lifestyle'].map(factor => (
-                <CustomCheckbox
-                  key={factor}
-                  label={factor}
-                  checked={member.risk.includes(factor)}
-                  onChange={() => updateRisk(factor)}
-                  className="ml-2"
-                />
-              ))}
-            </div>
-          </div>
-          {/* Risk Score */}
-          <div className="w-full flex flex-col items-center mb-4">
-            <div className="text-lg font-bold text-purple-600">Your estimated risk: <span className="text-pink-600 text-2xl animate-pulse">{riskScore}%</span> <span className="text-base text-gray-600 font-normal">lifetime risk</span></div>
-            <div className="text-xs text-gray-500">(Personalized risk score based on your family and lifestyle data)</div>
-          </div>
-          {/* Privacy Notice */}
-          <div className="w-full text-xs text-gray-500 text-center mt-2">
-            We store only minimal data, fully user-controlled, privacy focused. All fields are optional. Sharing requires your consent.
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function CustomCheckbox({ label, checked, onChange, className = '' }) {
-  return (
-    <label className={`flex items-center gap-2 cursor-pointer group ${className}`}>
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={onChange}
-        className="hidden"
-      />
-      <span className={`w-6 h-6 rounded-full border-2 border-pink-300 flex items-center justify-center transition-all duration-200
-        ${checked ? 'bg-gradient-to-br from-pink-400 to-purple-400 border-pink-500 shadow-md' : 'bg-white/60'}
-        group-hover:ring-2 group-hover:ring-pink-200
-      `}>
-        {checked && (
-          <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-            <path d="M5 13l4 4L19 7" />
-          </svg>
-        )}
-      </span>
-      <span className="select-none text-gray-700 group-hover:text-pink-600 transition-colors font-semibold">{label}</span>
-    </label>
-  );
-}
-
-    // Risk Assessment Modal placeholder
-const RiskAssessmentModal = ({ open, onClose }) => {
-  const [step, setStep] = useState(1);
-  const totalSteps = 4;
-
-  const [form, setForm] = useState({
-    menarche: "",
-    menopause: "",
-    menopauseAge: "",
-    pregnant: "",
-    firstChildAge: "",
-    parity: "",
-    breastfeeding: "",
-    bfDuration: "",
-    birthControl: "",
-    hrt: "",
-    familyHistory: "",
-    familyCancerAge: "",
-    personalHistory: "",
-  });
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const nextStep = () => step < totalSteps && setStep(step + 1);
-  const prevStep = () => step > 1 && setStep(step - 1);
-
-  // PROGRESS BAR CALC
-  const progressPercent = (step / totalSteps) * 100;
-
-  // FINAL RESULT
-  const [result, setResult] = useState(null);
-  const calculateRisk = () => {
-    let score = 0;
-
-    if (form.menarche === "<12") score++;
-    if (form.menopause === "Yes" && Number(form.menopauseAge) > 55) score++;
-    if (form.pregnant === "No") score++;
-    if (form.pregnant === "Yes" && Number(form.firstChildAge) > 30) score++;
-    if (form.parity && Number(form.parity) < 2) score++;
-    if (form.breastfeeding === "No") score++;
-    if (form.breastfeeding === "Yes" && Number(form.bfDuration) < 6) score++;
-    if (form.birthControl === "Yes") score++;
-    if (form.hrt === "Yes") score++;
-    if (form.familyHistory === "Yes") score += 2;
-    if (form.personalHistory === "Yes") score += 2;
-
-    let risk = score >= 4 ? "Higher Risk" : "Average/Lower Risk";
-    setResult(risk);
-  };
-
-  if (!open) return null;
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 overflow-y-auto"
-      onClick={() => setShowRiskModal(false)}
-    >
-      <div
-        className="backdrop-blur-2xl bg-white border border-pink-200 rounded-3xl shadow-2xl p-0 w-full max-w-xl flex flex-col items-center animate-fade-in relative mt-16"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={onClose}
-
-         className="absolute top-4 right-4 text-gray-400 hover:text-pink-500 text-2xl font-bold"
-        >
-          ×
-        </button>
-
-        <div className="p-10 w-full">
-          <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600 mb-8 text-center">
-            Risk Assessment
-          </h2>
-
-          {/* PROGRESS BAR */}
-          <div className="w-full bg-gray-200 h-3 rounded-full mb-8">
-            <div
-              className="bg-gradient-to-r from-pink-500 to-purple-600 h-3 rounded-full transition-all duration-300"
-              style={{ width: `${progressPercent}%` }}
-            ></div>
-          </div>
-
-          {/* STEP 1 */}
-          {step === 1 && (
-            <div className="space-y-6">
-              <label className="block font-semibold">
-                Age at first period:
-              </label>
-              <select
-                name="menarche"
-                value={form.menarche}
-                onChange={handleChange}
-                className="w-full p-3 rounded-xl border-2 border-pink-300"
-              >
-                <option value="">Select</option>
-                <option value="<12">Less than 12</option>
-                <option value="12-14">12–14</option>
-                <option value=">14">Above 14</option>
-              </select>
-
-              <label className="block font-semibold">
-                Menopause occurred?
-              </label>
-              <select
-                name="menopause"
-                value={form.menopause}
-                onChange={handleChange}
-                className="w-full p-3 rounded-xl border-2 border-pink-300"
-              >
-                <option value="">Select</option>
-                <option value="No">Regular</option>
-                <option value="Yes">Menopause</option>
-              </select>
-
-              {form.menopause === "Yes" && (
-                <input
-                  name="menopauseAge"
-                  type="number"
-                  placeholder="Age at menopause"
-                  value={form.menopauseAge}
-                  onChange={handleChange}
-                  className="w-full p-3 rounded-xl border-2 border-pink-300"
-                />
-              )}
-            </div>
-          )}
-
-          {/* STEP 2 */}
-          {step === 2 && (
-            <div className="space-y-6">
-              <label className="block font-semibold">Ever been pregnant?</label>
-              <select
-                name="pregnant"
-                value={form.pregnant}
-                onChange={handleChange}
-                className="w-full p-3 rounded-xl border-2 border-pink-300"
-              >
-                <option value="">Select</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
-
-              {form.pregnant === "Yes" && (
-                <>
-                  <input
-                    name="firstChildAge"
-                    type="number"
-                    placeholder="Age at first child"
-                    value={form.firstChildAge}
-                    onChange={handleChange}
-                    className="w-full p-3 rounded-xl border-2 border-pink-300"
-                  />
-                  <input
-                    name="parity"
-                    type="number"
-                    placeholder="Number of children"
-                    value={form.parity}
-                    onChange={handleChange}
-                    className="w-full p-3 rounded-xl border-2 border-pink-300"
-                  />
-                </>
-              )}
-            </div>
-          )}
-
-          {/* STEP 3 */}
-          {step === 3 && (
-            <div className="space-y-6">
-              <label className="block font-semibold">Breastfeeding?</label>
-              <select
-                name="breastfeeding"
-                value={form.breastfeeding}
-                onChange={handleChange}
-                className="w-full p-3 rounded-xl border-2 border-pink-300"
-              >
-                <option value="">Select</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
-
-              {form.breastfeeding === "Yes" && (
-                <input
-                  name="bfDuration"
-                  type="number"
-                  placeholder="Duration (months)"
-                  value={form.bfDuration}
-                  onChange={handleChange}
-                  className="w-full p-3 rounded-xl border-2 border-pink-300"
-                />
-              )}
-
-              <label className="block font-semibold">
-                Long-term birth control?
-              </label>
-              <select
-                name="birthControl"
-                value={form.birthControl}
-                onChange={handleChange}
-                className="w-full p-3 rounded-xl border-2 border-pink-300"
-              >
-                <option value="">Select</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
-
-              <label className="block font-semibold">
-                Hormone replacement therapy?
-              </label>
-              <select
-                name="hrt"
-                value={form.hrt}
-                onChange={handleChange}
-                className="w-full p-3 rounded-xl border-2 border-pink-300"
-              >
-                <option value="">Select</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
-            </div>
-          )}
-
-          {/* STEP 4 */}
-          {step === 4 && (
-            <div className="space-y-6">
-              <label className="block font-semibold">
-                Any close relative with breast cancer?
-              </label>
-              <select
-                name="familyHistory"
-                value={form.familyHistory}
-                onChange={handleChange}
-                className="w-full p-3 rounded-xl border-2 border-pink-300"
-              >
-                <option value="">Select</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
-
-              {form.familyHistory === "Yes" && (
-                <input
-                  name="familyCancerAge"
-                  type="number"
-                  placeholder="Relative's age at diagnosis"
-                  value={form.familyCancerAge}
-                  onChange={handleChange}
-                  className="w-full p-3 rounded-xl border-2 border-pink-300"
-                />
-              )}
-
-              <label className="block font-semibold">
-                Have YOU ever had breast cancer?
-              </label>
-              <select
-                name="personalHistory"
-                value={form.personalHistory}
-                onChange={handleChange}
-                className="w-full p-3 rounded-xl border-2 border-pink-300"
-              >
-                <option value="">Select</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
-
-              <button
-                onClick={calculateRisk}
-                className="w-full py-4 rounded-xl font-bold text-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg mt-6"
-              >
-                Analyze Risk
-              </button>
-
-              {result && (
-                <div className="mt-4 text-2xl font-bold text-pink-600 text-center">
-                  Your Risk: <span className="text-purple-600">{result}</span>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Navigation */}
-          <div className="flex justify-between mt-10">
-            {step > 1 ? (
-              <button
-                onClick={prevStep}
-                className="px-6 py-3 rounded-xl border border-gray-400 text-gray-600"
-              >
-                Back
-              </button>
-            ) : (
-              <span></span>
-            )}
-
-            {step < totalSteps && (
-              <button
-                onClick={nextStep}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white"
-              >
-                Next →
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-  // Auth Modal
-  const AuthModal = () => {
-    if (!authModal) return null;
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setAuthModal(null)}>
-        <div className="backdrop-blur-xl bg-white/70 border border-pink-100 rounded-3xl shadow-2xl p-0 w-full max-w-lg flex flex-col items-center animate-fade-in relative" onClick={e => e.stopPropagation()}>
-          <button onClick={() => setAuthModal(null)} className="absolute top-4 right-4 text-gray-400 hover:text-pink-500 text-2xl font-bold">&times;</button>
-          {authModal === 'login' ? <Login onSwitch={() => setAuthModal('signup')} /> : <SignUp onSwitch={() => setAuthModal('login')} />}
-        </div>
-      </div>
-    );
-  };
-
-  // Handler for opening dashboard with terms check
-  const handleOpenDashboard = () => {
-    if (!agreedToTerms) {
-      setShowTermsModal(true);
-    } else {
-      setShowFamilyDashboard(true);
-    }
-  };
-
-  // Terms & Conditions Modal
-  const TermsModal = () => {
-    if (!showTermsModal) return null;
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowTermsModal(false)}>
-        <div className="backdrop-blur-2xl bg-white/90 border border-pink-100 rounded-3xl shadow-2xl p-0 w-full max-w-lg flex flex-col items-center animate-fade-in relative" onClick={e => e.stopPropagation()} style={{boxShadow: '0 8px 32px 0 rgba(255, 182, 193, 0.25)'}}>
-          <button onClick={() => setShowTermsModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-pink-500 text-2xl font-bold">&times;</button>
-          <div className="p-8 w-full flex flex-col items-center">
-            <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600 mb-4 font-lexend tracking-tight drop-shadow-lg text-center">Terms & Conditions</h2>
-            <div className="text-gray-700 text-base mb-6 text-center">
-              We collect only the information necessary for providing your personalized breast cancer risk assessment. <br />
-              <span className="font-semibold text-pink-600">Your privacy is extremely important to us.</span> <br />
-              This information will <span className="font-bold">never be shared</span> with any third party and is used solely for your health dashboard experience. <br />
-              You are always in control of your data.
-            </div>
-            <CustomCheckbox
-              label="I agree to the terms and conditions."
-              checked={agreedToTerms}
-              onChange={e => setAgreedToTerms(e.target.checked)}
-              className="mb-6"
-            />
-            <button
-              className={`w-full py-3 rounded-xl font-bold text-lg transition-all duration-200 ${agreedToTerms ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg hover:scale-105' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
-              disabled={!agreedToTerms}
-              onClick={() => { setShowTermsModal(false); setShowFamilyDashboard(true); }}
-            >
-              Proceed
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+  const handleLogout = async () => {
+    await logout();
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 font-sans">
-     <RiskAssessmentModal open={showRiskModal} onClose={() => setShowRiskModal(false)} />
-
+    <>
       {/* Header */}
-      <header className="bg-white/60 backdrop-blur-md border-b border-pink-100 sticky top-0 z-50">
+      <header className="bg-white/95 backdrop-blur-sm border-b border-pink-100 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4 relative">
+          <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <Heart className="w-6 h-6 text-white" />
+              <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <Heart className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold text-gray-900">CareDetect</span>
             </div>
-            {/* Desktop Nav */}
-            <nav className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="nav-link">Features</a>
-              <a href="#how-it-works" className="nav-link">How It Works</a>
-              <a href="#about" className="nav-link">About</a>
-              <a href="#contact" className="nav-link">Contact</a>
-              <button
-                id="3d-model-btn"
-                className="nav-link bg-transparent border-none p-0 focus:outline-none"
-                onClick={() => setShowDoctorModel(true)}
+            
+            <nav className="hidden md:flex space-x-8">
+              <a href="#features" className="text-gray-600 hover:text-pink-600 transition-colors">Features</a>
+              <a href="#how-it-works" className="text-gray-600 hover:text-pink-600 transition-colors">How It Works</a>
+              <a href="#about" className="text-gray-600 hover:text-pink-600 transition-colors">About</a>
+              <a href="#contact" className="text-gray-600 hover:text-pink-600 transition-colors">Contact</a>
+              <button 
+                onClick={() => setShowGameHub(true)}
+                className="text-gray-600 hover:text-pink-600 transition-colors"
+              >
+                🎮 Games
+              </button>
+              <button 
+                onClick={() => setShowBreastModel(true)}
+                className="text-gray-600 hover:text-pink-600 transition-colors"
               >
                 3D Model
               </button>
-              <button
-                id="genetic-risk-btn"
-                className="text-gray-700 hover:text-purple-600 transition-colors focus:outline-none font-semibold border border-purple-200 rounded-full px-4 py-1 ml-2 bg-white/70 hover:bg-purple-100"
-                onClick={handleOpenDashboard}
-              >
-                Genetic Risk
-              </button>
-              <button
-                id="risk-assessment-btn"
-                className="text-gray-700 hover:text-pink-600 transition-colors focus:outline-none font-semibold border border-pink-200 rounded-full px-4 py-1 ml-2 bg-white/70 hover:bg-pink-100"
+              <button 
                 onClick={() => setShowRiskModal(true)}
+                className="text-gray-600 hover:text-pink-600 transition-colors"
               >
                 Risk Assessment
               </button>
+              <button 
+                onClick={() => setShowGeneticRiskForm(true)}
+                className="text-gray-600 hover:text-pink-600 transition-colors"
+              >
+                Genetic Risk
+              </button>
             </nav>
-            {/* Desktop Auth Buttons */}
-            <div className="hidden md:flex gap-3 items-center">
-              <button
-                id="login-btn"
-                className="bg-white border border-purple-500 text-purple-600 px-6 py-2 rounded-full font-semibold hover:bg-purple-600 hover:text-white transition-all duration-200"
-                onClick={() => setAuthModal('login')}
-              >
-                Login
-              </button>
-              <button
-                id="signup-btn"
-                className="bg-white border border-purple-500 text-purple-600 px-6 py-2 rounded-full font-semibold hover:bg-purple-600 hover:text-white transition-all duration-200"
-                onClick={() => setAuthModal('signup')}
-              >
-                Sign Up
-              </button>
+            
+            <div className="flex items-center space-x-3">
+              {isAuthenticated ? (
+                <div className="flex items-center space-x-3">
+                  <button 
+                    onClick={() => setShowDashboard(true)}
+                    className="flex items-center space-x-2 bg-pink-50 px-3 py-1.5 rounded-full border border-pink-200 hover:bg-pink-100 transition-colors cursor-pointer"
+                    title="Click to open Dashboard"
+                  >
+                    <User className="w-4 h-4 text-pink-600" />
+                    <span className="text-sm font-medium text-pink-700">
+                      {user?.name?.split(' ')[0] || 'User'}
+                    </span>
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-3">
+                  <button 
+                    onClick={() => setAuthModal('login')}
+                    className="text-gray-600 hover:text-pink-600 transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-50"
+                  >
+                    Login
+                  </button>
+                  <button 
+                    onClick={() => setAuthModal('signup')}
+                    className="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition-colors"
+                  >
+                    Sign Up
+                  </button>
+                </div>
+              )}
             </div>
-            {/* Hamburger Icon for Mobile */}
-            <button
-              className="md:hidden flex items-center justify-center p-2 rounded focus:outline-none focus:ring-2 focus:ring-pink-400"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Open menu"
-            >
-              <svg className="w-7 h-7 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            {/* Mobile Menu Dropdown */}
-            {mobileMenuOpen && (
-              <div className="md:hidden absolute top-full right-0 mt-2 w-56 bg-white/95 rounded-2xl shadow-2xl border border-pink-100 z-50 animate-fade-in flex flex-col p-4 gap-2">
-                <a href="#features" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Features</a>
-                <a href="#how-it-works" className="nav-link" onClick={() => setMobileMenuOpen(false)}>How It Works</a>
-                <a href="#about" className="nav-link" onClick={() => setMobileMenuOpen(false)}>About</a>
-                <a href="#contact" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Contact</a>
-                <button
-                  className="nav-link bg-transparent border-none p-0 text-left focus:outline-none"
-                  onClick={() => { setShowDoctorModel(true); setMobileMenuOpen(false); }}
-                >
-                  3D Model
-                </button>
-                <button
-                  className="nav-link bg-transparent border-none p-0 text-left focus:outline-none"
-                  onClick={() => { setShowFamilyDashboard(true); setMobileMenuOpen(false); }}
-                >
-                  Genetic Risk
-                </button>
-                <hr className="my-2 border-pink-100" />
-                <button
-                  className="bg-white border border-purple-500 text-purple-600 px-4 py-2 rounded-full font-semibold hover:bg-purple-600 hover:text-white transition-all duration-200 w-full text-left"
-                  onClick={() => { setAuthModal('login'); setMobileMenuOpen(false); }}
-                >
-                  Login
-                </button>
-                <button
-                  className="bg-white border border-purple-500 text-purple-600 px-4 py-2 rounded-full font-semibold hover:bg-purple-600 hover:text-white transition-all duration-200 w-full text-left"
-                  onClick={() => { setAuthModal('signup'); setMobileMenuOpen(false); }}
-                >
-                  Sign Up
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-pink-600/10 to-purple-600/10"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
+      <section className="hero-section relative bg-gradient-to-br from-pink-50 via-purple-50 to-pink-100 py-20 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-              <h1 
-                className="text-5xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight font-lexend tracking-tight"
-              >
+            {/* Left Content */}
+            <div>
+              <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6 font-lexend tracking-tight">
                 Early Detection
-                <span className="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent block">
-                  Saves Lives
-                </span>
+                <span className="block bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">Saves Lives</span>
               </h1>
-              <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                Revolutionary AI-powered breast cancer detection technology that empowers women with accurate, 
-                accessible screening solutions for better health outcomes.
+              <p className="text-xl text-gray-600 mb-8 max-w-lg">
+                Revolutionary AI-powered breast cancer detection technology that empowers women with accurate, accessible screening solutions for better health outcomes.
               </p>
+              
+              {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <button id="start-screening-btn" className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-4 rounded-full font-semibold hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center group">
+                <button className="bg-pink-600 text-white px-8 py-4 rounded-full font-semibold hover:bg-pink-700 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center">
                   Start Screening
-                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="ml-2 w-5 h-5" />
                 </button>
-                <button id="watch-demo-btn" className="bg-white/80 backdrop-blur-sm text-gray-700 px-8 py-4 rounded-full font-semibold hover:bg-white transition-all duration-300 flex items-center justify-center group border border-gray-200">
-                  <Play className="mr-2 w-5 h-5 group-hover:scale-110 transition-transform" />
+                <button className="bg-white text-pink-600 px-8 py-4 rounded-full font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 border border-pink-200 flex items-center justify-center">
+                  <Play className="mr-2 w-5 h-5" />
                   Watch Demo
                 </button>
-                <button
-                  id="sweat-detect-btn"
-                  className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-4 rounded-full font-semibold hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center group"
+                <button 
                   onClick={() => setShowSweatDetection(true)}
+                  className="bg-pink-600 text-white px-8 py-4 rounded-full font-semibold hover:bg-pink-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
                 >
                   Detecting by Sweat
                 </button>
               </div>
-              <div className="flex items-center space-x-6 text-sm text-gray-500">
+              
+              {/* Trust Indicators */}
+              <div className="flex flex-wrap gap-6 text-sm text-gray-600">
                 <div className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
                   FDA Approved
                 </div>
                 <div className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  92.83% Accuracy
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                  92.8% Accuracy
                 </div>
                 <div className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
                   Instant Results
                 </div>
               </div>
             </div>
             
-            <div className={`transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-500 rounded-3xl blur-3xl opacity-20 animate-pulse"></div>
-                <div className="relative bg-white/90 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-pink-100">
-                  <div className="w-full flex justify-center items-center mb-0">
-                    <div className="w-full max-w-xl aspect-video bg-gradient-to-br from-pink-100 to-purple-100 rounded-2xl flex items-center justify-center">
-                      <video 
-                        src="/video.mp4" 
-                        controls 
-                        className="w-full h-full object-cover rounded-2xl shadow-lg border border-purple-200 bg-white"
-                        style={{ background: 'rgba(255,255,255,0.7)' }}
-                      >
-                        Your browser does not support the video tag.
-                      </video>
+            {/* Right Content - Video */}
+            <div className="relative">
+              <div className="bg-white/80 rounded-3xl shadow-2xl p-8 backdrop-blur-2xl border border-pink-100">
+                <div className="relative bg-black rounded-2xl overflow-hidden shadow-lg" style={{ aspectRatio: '16/9' }}>
+                  <video 
+                    className="w-full h-full object-contain"
+                    controls
+                    preload="metadata"
+                    poster="/video-poster.jpg"
+                    onError={(e) => {
+                      // If video fails to load, show placeholder
+                      e.target.style.display = 'none';
+                      e.target.nextElementSibling.style.display = 'flex';
+                    }}
+                  >
+                    <source src="/video.mp4" type="video/mp4" />
+                    <source src="./video.mp4" type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                  {/* CareDetect Branded Video Placeholder */}
+                  <div className="w-full h-full bg-gradient-to-br from-gray-800 via-gray-900 to-black flex flex-col items-center justify-center text-white relative">
+                    {/* CareDetect Logo */}
+                    <div className="text-center mb-8">
+                      <h1 className="text-6xl font-bold mb-2">
+                        <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                          Care
+                        </span>
+                        <br />
+                        <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+                          Detect
+                        </span>
+                      </h1>
+                      <p className="text-lg text-gray-300 mt-4">AI-Powered Breast Cancer Detection</p>
                     </div>
+                    
+                    {/* Video Controls */}
+                    <div className="absolute bottom-4 left-4 right-4 bg-black/50 rounded-lg p-3">
+                      <div className="flex items-center justify-between text-white">
+                        <div className="flex items-center space-x-4">
+                          <button className="text-white hover:text-blue-400 transition-colors">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M8 5v14l11-7z"/>
+                            </svg>
+                          </button>
+                          <span className="text-sm font-mono">0:08 / 0:26</span>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                          <button className="text-white hover:text-blue-400 transition-colors">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                            </svg>
+                          </button>
+                          <button className="text-white hover:text-blue-400 transition-colors">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+                            </svg>
+                          </button>
+                          <button className="text-white hover:text-blue-400 transition-colors">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                      
+                      {/* Progress Bar */}
+                      <div className="mt-3">
+                        <div className="w-full bg-gray-600 rounded-full h-1">
+                          <div className="bg-blue-500 h-1 rounded-full" style={{ width: '30%' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Decorative Elements */}
+                    <div className="absolute top-8 left-8 w-2 h-2 bg-pink-400 rounded-full animate-pulse"></div>
+                    <div className="absolute top-16 right-12 w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                    <div className="absolute bottom-20 left-16 w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+                    <div className="absolute bottom-32 right-8 w-1 h-1 bg-pink-300 rounded-full animate-pulse" style={{ animationDelay: '1.5s' }}></div>
                   </div>
                 </div>
               </div>
@@ -775,197 +266,226 @@ const RiskAssessmentModal = ({ open, onClose }) => {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-20 bg-white/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-            <div className="group">
-              <div className="text-4xl font-bold text-pink-600 mb-2 group-hover:scale-110 transition-transform">92.83%</div>
-              <div className="text-gray-600">Accuracy Rate</div>
-            </div>
-            <div className="group">
-              <div className="text-4xl font-bold text-purple-600 mb-2 group-hover:scale-110 transition-transform">500K+</div>
-              <div className="text-gray-600">Lives Impacted</div>
-            </div>
-            <div className="group">
-              <div className="text-4xl font-bold text-pink-600 mb-2 group-hover:scale-110 transition-transform">1M+</div>
-              <div className="text-gray-600">Screenings Done</div>
-            </div>
-            <div className="group">
-              <div className="text-4xl font-bold text-purple-600 mb-2 group-hover:scale-110 transition-transform">24/7</div>
-              <div className="text-gray-600">Support Available</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" className="py-20">
+      {/* Project Features Section */}
+      <section className="project-features py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 
-              className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4 font-lexend tracking-tight"
-            >
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
               Project Features
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Explore the core features of our breast cancer detection platform.
             </p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* AI-powered Screening */}
-            <div className="group bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-pink-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <div className="text-pink-600 mb-4 group-hover:scale-110 transition-transform">
-                <Zap className="w-8 h-8" />
+            <div className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl p-6 border border-pink-100 hover:shadow-lg transition-all duration-300">
+              <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">AI-powered Screening</h3>
-              <p className="text-gray-600">Upload or capture images for instant, accurate breast cancer risk analysis using advanced AI.</p>
+              <p className="text-gray-600 text-sm">
+                Upload or capture images for instant, accurate breast cancer risk analysis using advanced AI algorithms.
+              </p>
             </div>
+
             {/* Sweat Biomarker Detection */}
-            <div className="group bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-pink-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <div className="text-blue-500 mb-4 group-hover:scale-110 transition-transform">
-                <Droplets className="w-8 h-8" />
+            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-6 border border-blue-100 hover:shadow-lg transition-all duration-300">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 7.172V5L8 4z" />
+                </svg>
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">Sweat Biomarker Detection</h3>
-              <p className="text-gray-600">Non-invasive detection using sweat test strips and smartphone camera for early risk assessment.</p>
+              <p className="text-gray-600 text-sm">
+                Non-invasive detection using sweat test strips and smartphone camera for early risk assessment.
+              </p>
             </div>
+
             {/* 3D Breast Model */}
-            <div className="group bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-pink-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <div className="text-purple-600 mb-4 group-hover:scale-110 transition-transform">
-                <Shield className="w-8 h-8" />
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100 hover:shadow-lg transition-all duration-300">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mb-4">
+                <Shield className="w-6 h-6 text-white" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">3D Breast Model</h3>
-              <p className="text-gray-600">Interactive 3D model for education, symptom awareness, and region-specific information.</p>
+              <p className="text-gray-600 text-sm">
+                Interactive 3D model for education, symptom awareness, and region-specific information.
+              </p>
             </div>
+
             {/* Genetic Risk Calculator */}
-            <div className="group bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-pink-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <div className="text-pink-500 mb-4 group-hover:scale-110 transition-transform">
-                <Users className="w-8 h-8" />
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100 hover:shadow-lg transition-all duration-300">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mb-4">
+                <Users className="w-6 h-6 text-white" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">Genetic Risk Calculator</h3>
-              <p className="text-gray-600">Personalized risk score based on family history, genetics, and lifestyle factors.</p>
+              <p className="text-gray-600 text-sm">
+                Personalized risk score based on family history, genetics, and lifestyle factors.
+              </p>
+            </div>
+          </div>
+
+          {/* Interactive Games Section - Separate Row */}
+          <div className="games-section mt-8">
+            <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-8 border border-yellow-100 hover:shadow-lg transition-all duration-300 max-w-2xl mx-auto">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl flex items-center justify-center mb-4 mx-auto">
+                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-semibold text-gray-900 mb-3">Interactive Health Games 🎮</h3>
+                <p className="text-gray-600 mb-4">
+                  Learn through fun, engaging games: Spot the Sign detective challenge, Myth vs Fact rapid-fire quiz, and earn badges while becoming a breast health expert!
+                </p>
+                <button 
+                  onClick={() => setShowGameHub(true)}
+                  className="px-8 py-3 bg-gradient-to-r from-yellow-500 to-orange-600 text-white font-bold rounded-xl hover:scale-105 transition-all duration-300 shadow-lg"
+                >
+                  🚀 Play Games Now
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 bg-white/70 backdrop-blur-md">
+      {/* How CareDetect Works Section */}
+      <section className="how-it-works py-20 bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-16 items-center">
-            {/* Doctor Card (Left) */}
-            <div className="flex flex-col items-center">
-              <div className="w-full max-w-lg h-[480px] bg-white/80 rounded-3xl shadow-2xl flex flex-col items-center justify-center border border-pink-100 backdrop-blur-2xl p-8">
-                <div className="flex-1 flex items-center justify-center" style={{minHeight: '320px'}}>
-                  <DoctorScene />
-                </div>
-                <div className="mt-6 text-center">
-                  <h3 className="text-2xl font-bold text-pink-600 mb-2">Meet Dr. CareDetect</h3>
-                  <p className="text-gray-600 text-base">Your friendly AI health assistant, here to guide you through every step of your breast cancer screening journey.</p>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent mb-8">
+              How CareDetect Works
+            </h2>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left side - Doctor Model */}
+            <div className="relative">
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-pink-100">
+                <div className="text-center mb-6">
+                  <div className="flex justify-center mb-4">
+                    <DoctorModel3D />
+                  </div>
+                  <h3 className="doctor-model text-2xl font-bold text-pink-600 mb-2">Meet Dr. CareDetect</h3>
+                  <p className="text-gray-600 text-sm">
+                    Your friendly AI health assistant here to guide you through every step of your breast cancer screening journey.
+                  </p>
                 </div>
               </div>
             </div>
-            {/* Steps (Right) */}
-            <div className="pl-0 md:pl-8">
-              <h2 className="text-4xl lg:text-5xl font-bold text-pink-600 mb-6 font-lexend tracking-tight">How CareDetect Works</h2>
-              {/* Listen Controls */}
-              <div className="mb-6 flex items-center gap-2 bg-white/70 backdrop-blur-lg rounded-full px-3 py-1 shadow-lg border border-pink-200/60 w-fit" style={{ boxShadow: '0 2px 12px 0 rgba(236, 72, 153, 0.10)' }}>
-                {/* Play or Replay */}
-                {!isSpeaking ? (
-                  <button
-                    className="p-0.5 rounded-full transition-all duration-200 flex items-center justify-center group ring-2 ring-pink-300 bg-white hover:bg-pink-50 shadow-sm hover:scale-105 focus:outline-none"
-                    onClick={handlePlay}
-                    aria-label="Play"
-                    title="Play"
-                    style={{ width: 28, height: 28 }}
-                  >
-                    {/* Simple play icon (like |>) */}
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <polygon points="4,3 13,8 4,13" fill="currentColor" className="text-pink-500 group-hover:text-purple-600 transition-colors duration-200" />
-                    </svg>
-                  </button>
-                ) : (
-                  <button
-                    className="p-0.5 rounded-full transition-all duration-200 flex items-center justify-center group ring-2 ring-pink-300 bg-white hover:bg-pink-50 shadow-sm hover:scale-105 focus:outline-none"
-                    onClick={handlePlay}
-                    aria-label="Replay"
-                    title="Replay"
-                    style={{ width: 28, height: 28 }}
-                  >
-                    {/* Simple replay icon (circular arrow) */}
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M8 3a5 5 0 1 1-4.33 2.5" stroke="currentColor" strokeWidth="1.5" fill="none" className="text-pink-500 group-hover:text-purple-600 transition-colors duration-200" />
-                      <polygon points="3,2 3,6 6,4" fill="currentColor" className="text-pink-500 group-hover:text-purple-600 transition-colors duration-200" />
-                    </svg>
-                  </button>
-                )}
-                {/* Pause */}
-                <button
-                  className="p-0.5 rounded-full transition-all duration-200 flex items-center justify-center group ring-2 ring-pink-200 bg-white hover:bg-pink-50 shadow-sm hover:scale-105 focus:outline-none disabled:opacity-50"
-                  onClick={handlePause}
-                  aria-label="Pause"
-                  title="Pause"
-                  disabled={!isSpeaking || isPaused}
-                  style={{ width: 28, height: 28 }}
-                >
-                  {/* Pause icon */}
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="4" y="4" width="2" height="8" rx="1" fill="currentColor" className="text-pink-400 group-hover:text-purple-600 transition-colors duration-200" />
-                    <rect x="10" y="4" width="2" height="8" rx="1" fill="currentColor" className="text-pink-400 group-hover:text-purple-600 transition-colors duration-200" />
-                  </svg>
-                </button>
-                {/* Resume (ArrowRightCircle) */}
-                <button
-                  className="p-0.5 rounded-full transition-all duration-200 flex items-center justify-center group ring-2 ring-green-300 bg-white hover:bg-green-50 shadow-sm hover:scale-105 focus:outline-none disabled:opacity-50"
-                  onClick={handleResume}
-                  aria-label="Resume"
-                  title="Resume"
-                  disabled={!isSpeaking || !isPaused}
-                  style={{ width: 28, height: 28 }}
-                >
-                  {/* Simple right arrow in a circle */}
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.5" className="text-green-400 group-hover:text-green-600 transition-colors duration-200" />
-                    <polygon points="7,5 11,8 7,11" fill="currentColor" className="text-green-400 group-hover:text-green-600 transition-colors duration-200" />
-                  </svg>
-                </button>
-                <span className="ml-1 font-semibold text-sm bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">Listen</span>
+
+            {/* Right side - Steps */}
+            <div className="space-y-6">
+              <div className="flex items-start space-x-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                  1
+                </div>
+                <div>
+                  <h4 className="text-xl font-semibold text-gray-900 mb-2">Start Screening</h4>
+                  <p className="text-gray-600">
+                    Click on <strong>Start Screening</strong> and answer a few simple questions to begin your health checkup journey.
+                  </p>
+                </div>
               </div>
-              <ol className="space-y-8">
-                <li className="flex items-start">
-                  <span className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center text-white text-2xl shadow-lg mr-4">1</span>
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-1">Start Screening</h3>
-                    <p className="text-gray-600">Click on <b>Start Screening</b> and answer a few simple questions to begin your health checkup journey.</p>
-                  </div>
-                </li>
-                <li className="flex items-start">
-                  <span className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center text-white text-2xl shadow-lg mr-4">2</span>
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-1">Upload or Capture Image</h3>
-                    <p className="text-gray-600">Upload your medical image or capture a new one using your phone or computer.</p>
-                  </div>
-                </li>
-                <li className="flex items-start">
-                  <span className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center text-white text-2xl shadow-lg mr-4">3</span>
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-1">AI Analysis</h3>
-                    <p className="text-gray-600">Our advanced AI instantly analyzes your image and provides accurate results with easy-to-understand feedback.</p>
-                  </div>
-                </li>
-                <li className="flex items-start">
-                  <span className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center text-white text-2xl shadow-lg mr-4">4</span>
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-1">Get Personalized Report</h3>
-                    <p className="text-gray-600">Download or view your personalized report and get recommendations for next steps.</p>
-                  </div>
-                </li>
-              </ol>
-              <div className="mt-8 text-gray-500 text-sm italic">* Available in multiple languages soon for everyone!</div>
+
+              <div className="flex items-start space-x-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                  2
+                </div>
+                <div>
+                  <h4 className="text-xl font-semibold text-gray-900 mb-2">Upload or Capture Image</h4>
+                  <p className="text-gray-600">
+                    Upload your medical image or capture a new one using your phone or computer.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                  3
+                </div>
+                <div>
+                  <h4 className="text-xl font-semibold text-gray-900 mb-2">AI Analysis</h4>
+                  <p className="text-gray-600">
+                    Our advanced AI instantly analyzes your image and provides accurate results with easy-to-understand feedback.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                  4
+                </div>
+                <div>
+                  <h4 className="text-xl font-semibold text-gray-900 mb-2">Get Personalized Report</h4>
+                  <p className="text-gray-600">
+                    Download or view your personalized report and get recommendations for next steps.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-8 text-center">
+                <p className="text-sm text-gray-500 italic">
+                  * Available in multiple languages soon for everyone!
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Risk Assessment Modal */}
+      {showRiskModal && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-2" onClick={() => setShowRiskModal(false)}>
+          <div className="bg-white rounded-2xl p-4 w-full max-w-4xl h-[95vh] flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-2 flex-shrink-0">
+              <h3 className="text-xl font-bold text-pink-600">Breast Cancer Risk Assessment</h3>
+              <button 
+                onClick={() => setShowRiskModal(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <BreastCancerRiskAssessment onBack={() => setShowRiskModal(false)} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3D Breast Model Modal */}
+      {showBreastModel && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-2" onClick={() => setShowBreastModel(false)}>
+          <div className="bg-white rounded-2xl p-4 w-full max-w-6xl h-[95vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-2 flex-shrink-0">
+              <h3 className="text-xl font-bold text-pink-600">Interactive 3D Breast Model</h3>
+              <button 
+                onClick={() => setShowBreastModel(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl shadow-inner border border-pink-100 p-1 overflow-hidden">
+              <BreastModel />
+            </div>
+            <div className="mt-2 text-center space-y-1 flex-shrink-0">
+              <p className="text-gray-600 text-xs">
+                <strong>Instructions:</strong> Click and drag to rotate • Hover over regions for information • Click on regions to explore symptoms
+              </p>
+              <p className="text-pink-600 text-xs font-semibold">
+                ❤️ Click on Nipple/Areola region for detailed discharge and bleeding information
+              </p>
+              <p className="text-gray-500 text-xs">Educational purposes only - Always consult healthcare professionals for medical advice</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-r from-pink-500 to-purple-600 text-white">
@@ -1033,44 +553,70 @@ const RiskAssessmentModal = ({ open, onClose }) => {
           </div>
         </div>
       </footer>
-      <AuthModal />
-      <TermsModal />
-      {/* 3D Model Modal */}
-      {showDoctorModel && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowDoctorModel(false)}>
-          <div className="backdrop-blur-2xl bg-white/90 border border-pink-100 rounded-3xl shadow-2xl p-0 w-full max-w-4xl flex flex-col items-center animate-fade-in relative" onClick={e => e.stopPropagation()} style={{boxShadow: '0 8px 32px 0 rgba(255, 182, 193, 0.25)'}}>
-            <button onClick={() => setShowDoctorModel(false)} className="absolute top-4 right-4 text-gray-400 hover:text-pink-500 text-2xl font-bold">&times;</button>
-            <div className="p-8 w-full flex flex-col items-center">
-              <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600 mb-6 font-lexend tracking-tight drop-shadow-lg text-center" style={{letterSpacing: '0.03em'}}>3D Breast Model</h2>
-              <div className="w-full flex justify-center">
-                <DoctorModel />
-              </div>
-              <p className="text-gray-600 text-center mt-4 max-w-2xl">
-                Interactive 3D model for breast health education and awareness. Use your mouse to rotate and explore the model.
-              </p>
-            </div>
-          </div>
+      <AuthModal 
+        isOpen={authModal !== null}
+        onClose={() => setAuthModal(null)}
+        onLogin={() => {
+          console.log('Login clicked');
+          // Handle login logic here
+        }}
+        onSignUp={() => {
+          console.log('Sign up clicked');
+          // Handle signup logic here
+        }}
+      />
+      <TermsModal 
+        isOpen={showTermsModal}
+        onClose={() => setShowTermsModal(false)}
+        onAgree={() => {
+          setShowTermsModal(false);
+          // Handle terms agreement
+        }}
+      />
+      <GeneticRiskForm open={showGeneticRiskForm} onClose={() => setShowGeneticRiskForm(false)} />
+      
+      {/* Game Hub */}
+      {showGameHub && (
+        <div className="fixed inset-0 z-50 bg-white overflow-y-auto overflow-x-hidden">
+          <GameHub onClose={() => setShowGameHub(false)} />
         </div>
       )}
+      
+      {/* Sweat Biomarker Detection */}
+      {showSweatDetection && (
+        <div className="fixed inset-0 z-50 bg-white overflow-y-auto" style={{ height: '100vh' }}>
+          <BreastCancerScreening 
+            onBack={() => setShowSweatDetection(false)} 
+          />
+        </div>
+      )}
+      
       {/* Floating Guide Me Button */}
       <button
-        className="fixed bottom-8 right-8 z-[9999] bg-pink-500 text-white px-4 py-2 rounded-full shadow-lg hover:scale-105 transition"
+        className="guide-me-btn fixed bottom-8 right-8 z-[9999] bg-pink-500 text-white px-4 py-2 rounded-full shadow-lg hover:scale-105 transition"
         onClick={() => setOnboardingStep(0)}
-        style={{ display: onboardingStep === null ? 'block' : 'none' }}
+        style={{ display: onboardingStep === null && !showGameHub && !showSweatDetection && !showDashboard ? 'block' : 'none' }}
       >
         Guide Me
       </button>
+      
+      {/* Dashboard */}
+      {showDashboard && (
+        <div className="fixed inset-0 z-50 bg-white overflow-y-auto overflow-x-hidden">
+          <Dashboard onClose={() => setShowDashboard(false)} onLogout={handleLogout} user={user} />
+        </div>
+      )}
       {/* Onboarding Overlay */}
       {onboardingStep !== null && (
         <OnboardingOverlay
           stepIndex={onboardingStep}
           onNext={() => {
-            if (onboardingStep < 2) setOnboardingStep(onboardingStep + 1);
+            if (onboardingStep < 15) setOnboardingStep(onboardingStep + 1);
             else setOnboardingStep(null);
           }}
           onClose={() => setOnboardingStep(null)}
         />
       )}
-    </div>
+    </>
   );
 } 
