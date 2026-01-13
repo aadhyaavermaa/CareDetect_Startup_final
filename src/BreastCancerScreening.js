@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import * as tf from "@tensorflow/tfjs";
 import { useNavigate } from 'react-router-dom';
 import { Droplets, ArrowLeft, AlertTriangle, CheckCircle, Smartphone, Brain, Shield, Camera, Info, AlertCircle, Upload, ChevronDown, User } from 'lucide-react';
 
@@ -65,25 +66,65 @@ const BreastCancerScreening = ({ onBack }) => {
     setFormStep(1); // Reset form step to 1
     setCurrentStep(5); // Go to risk assessment
   };
+     const [model, setModel] = useState(null);
+   const loadModel = async () => {
+  try {
+    const loadedModel = await tf.loadGraphModel(
+      "/models/tfjs_graph_model/model.json"
+    );
+    setModel(loadedModel);
+    alert("AI Model loaded successfully ✅");
+  } catch (err) {
+    console.error(err);
+    alert("Model load failed ❌ Check path");
+  }
+};
 
-  const simulateAnalysis = () => {
-    setIsAnalyzing(true);
-    setTimeout(() => {
-      setIsAnalyzing(false);
-      setResult('Your Risk Category: Average/Lower Risk');
-      setConfidence(85);
-      setCurrentStep(4);
-      
-      // Save test strip results to localStorage
-      const testStripResults = {
-        result: 'negative', // or 'positive' based on analysis
-        confidence: '85%',
-        date: new Date().toISOString(),
-        imageUrl: selectedImage
-      };
-      localStorage.setItem('testStripResults', JSON.stringify(testStripResults));
-    }, 3000);
+  
+const analyzeWithModel = async () => {
+  if (!model || !selectedImage) return;
+
+  setIsAnalyzing(true);
+  setCurrentStep(3);
+
+  const img = new Image();
+  img.src = selectedImage;
+
+  img.onload = async () => {
+    const tensor = tf.browser
+      .fromPixels(img)
+      .resizeNearestNeighbor([96, 96])
+      .toFloat()
+      .div(255)
+      .expandDims(0);
+
+    const pred = await model.executeAsync(tensor);
+    const value = pred.dataSync()[0];
+
+    let resultLabel;
+    let conf;
+
+    if (value >= 0.5) {
+  resultLabel = "positive";
+  conf = value;
+} else {
+  resultLabel = "negative";
+  conf = 1 - value;
+}
+
+
+    setResult(resultLabel);
+    setConfidence(Math.round(conf * 100));
+
+    setIsAnalyzing(false);
+    setCurrentStep(4);
+
+    tf.dispose([tensor, pred]);
   };
+};
+
+      
+  
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -250,6 +291,13 @@ const BreastCancerScreening = ({ onBack }) => {
           {currentStep === 1 && (
             <div className="text-center">
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 mb-6">
+                <button
+              onClick={loadModel}
+           className="bg-blue-600 text-white px-6 py-2 rounded-lg mb-6 hover:bg-blue-700"
+            >
+            Load AI Model
+            </button>
+
                 <Camera className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold mb-2">Upload Test Strip Image</h3>
                 <p className="text-gray-600 mb-4">
@@ -306,7 +354,7 @@ const BreastCancerScreening = ({ onBack }) => {
                   Retake Photo
                 </button>
                 <button
-                  onClick={simulateAnalysis}
+                  onClick={analyzeWithModel}
                   className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105"
                 >
                   Analyze Image

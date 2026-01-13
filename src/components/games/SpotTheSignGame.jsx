@@ -262,7 +262,7 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
           </div>
 
           {/* Level Selection */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/50 mb-8">
+          <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200 mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Choose Your Challenge</h2>
             
             <div className="grid md:grid-cols-3 gap-6">
@@ -295,7 +295,7 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
           </div>
 
           {/* Instructions */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/50 mb-8">
+          <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200 mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">How to Play</h2>
             <div className="grid md:grid-cols-2 gap-6">
               <div>
@@ -315,7 +315,7 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
           </div>
 
           {/* Signs Reference */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/50 mb-8">
+          <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200 mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">Signs to Look For</h2>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               {signTypes.map((sign) => (
@@ -353,11 +353,11 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
           {/* Game Header */}
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center space-x-6">
-              <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-xl px-4 py-2 shadow-lg">
+              <div className="flex items-center bg-white rounded-xl px-4 py-2 shadow-lg">
                 <Clock className="w-5 h-5 text-red-500 mr-2" />
                 <span className="font-bold text-red-600">{timeLeft}s</span>
               </div>
-              <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-xl px-4 py-2 shadow-lg">
+              <div className="flex items-center bg-white rounded-xl px-4 py-2 shadow-lg">
                 <Target className="w-5 h-5 text-green-500 mr-2" />
                 <span className="font-bold text-green-600">{score} pts</span>
               </div>
@@ -386,7 +386,7 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
           </div>
 
           {/* Game Area */}
-          <div className="relative bg-white/90 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/50">
+          <div className="relative bg-white rounded-3xl p-8 shadow-lg border border-gray-200">
             {/* Level Indicator */}
             <div className="absolute top-4 left-4 bg-pink-600 text-white px-3 py-1 rounded-full text-sm font-bold z-10">
               {level.toUpperCase()} MODE
@@ -557,7 +557,7 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
           </div>
 
           {/* Progress Bar */}
-          <div className="mt-6 bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-lg">
+          <div className="mt-6 bg-white rounded-xl p-4 shadow-lg border border-gray-200">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-semibold text-gray-700">Progress</span>
               <span className="text-sm text-gray-600">{foundSigns.length}/{gameData?.signs.length}</span>
@@ -593,7 +593,7 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
           </div>
 
           {/* Results Card */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/50 mb-8">
+          <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200 mb-8">
             <div className="grid md:grid-cols-3 gap-6 text-center">
               <div>
                 <div className="text-3xl font-bold text-pink-600">{score}</div>
@@ -612,7 +612,7 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
 
           {/* Badge Earned */}
           {percentage >= 80 && (
-            <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-3xl p-8 shadow-xl border border-yellow-200 mb-8">
+            <div className="bg-yellow-100 rounded-3xl p-8 shadow-xl border border-yellow-200 mb-8">
               <div className="text-center">
                 <Award className="w-16 h-16 text-yellow-600 mx-auto mb-4" />
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Badge Earned!</h2>
@@ -626,7 +626,7 @@ const SpotTheSignGame = ({ onBack, onClose }) => {
           <div className="flex justify-center space-x-4">
             <button
               onClick={startGame}
-              className="flex items-center px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:scale-105 transition-all duration-300"
+              className="flex items-center px-6 py-3 bg-pink-600 text-white font-semibold rounded-xl shadow-lg hover:bg-pink-700 transition-all duration-300"
             >
               <RefreshCw className="w-5 h-5 mr-2" />
               Play Again

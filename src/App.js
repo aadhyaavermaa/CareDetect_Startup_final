@@ -4,6 +4,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import BreastCancerLandingPage from './BreastCancerLandingPage';
 import RiskAssessment from './components/RiskAssessment';
 import Dashboard from './components/Dashboard';
+import StripAnalyzer from "./components/StripAnalyzer";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
             <Route path="/" element={<BreastCancerLandingPage />} />
             <Route path="/risk-assessment" element={<RiskAssessment />} />
             <Route path="/dashboard" element={<Dashboard />} />
+           <Route path="/strip-analyzer" element={<StripAnalyzer />} />
           </Routes>
         </div>
       </Router>
