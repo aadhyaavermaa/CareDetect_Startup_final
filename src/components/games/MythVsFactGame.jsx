@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Clock, CheckCircle, XCircle, Award, RefreshCw, Home, Zap } from 'lucide-react';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { mythVsFactQuestions } from '../../utils/mythVsFactQuestions';
 
 const MythVsFactGame = ({ onBack, onClose }) => {
+  const { t, tGame, language } = useLanguage();
   const [gameState, setGameState] = useState('menu'); // menu, playing, results
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
@@ -11,251 +14,8 @@ const MythVsFactGame = ({ onBack, onClose }) => {
   const [showFeedback, setShowFeedback] = useState(false);
   const [answers, setAnswers] = useState([]);
 
-  const allQuestions = [
-    // MYTH QUESTIONS (20 total)
-    {
-      id: 1,
-      question: "All breast lumps are cancerous?",
-      answer: false,
-      type: "myth",
-      explanation: "80-90% of breast lumps are benign (non-cancerous). However, every lump needs proper doctor evaluation for accurate diagnosis.",
-      category: "Symptoms"
-    },
-    {
-      id: 2,
-      question: "Breast cancer only affects older women?",
-      answer: false,
-      type: "myth",
-      explanation: "About 50% of breast cancer cases are diagnosed before age 50. Young women are also at risk and should be aware of symptoms.",
-      category: "Age & Risk"
-    },
-    {
-      id: 3,
-      question: "Having family history means I'll definitely get cancer?",
-      answer: false,
-      type: "myth",
-      explanation: "85-90% of breast cancer cases have NO family history. Most cases are sporadic, not hereditary.",
-      category: "Genetics"
-    },
-    {
-      id: 4,
-      question: "Breast pain means cancer?",
-      answer: false,
-      type: "myth",
-      explanation: "Breast pain is RARELY a sign of cancer. It's usually hormonal or cyclical and related to menstrual cycles.",
-      category: "Symptoms"
-    },
-    {
-      id: 5,
-      question: "No lump means no cancer?",
-      answer: false,
-      type: "myth",
-      explanation: "Early cancers often show as skin changes, nipple inversion, or dimpling FIRST, before any lump can be felt.",
-      category: "Symptoms"
-    },
-    {
-      id: 6,
-      question: "Biopsy spreads cancer throughout the body?",
-      answer: false,
-      type: "myth",
-      explanation: "Biopsy is completely SAFE and doesn't spread cancer. Delaying proper diagnosis is actually dangerous.",
-      category: "Treatment"
-    },
-    {
-      id: 7,
-      question: "Mammograms cause cancer due to radiation?",
-      answer: false,
-      type: "myth",
-      explanation: "Mammogram radiation dose is only 0.4mSv (equivalent to 7 weeks of background radiation). They are life-saving screening tools.",
-      category: "Screening"
-    },
-    {
-      id: 8,
-      question: "Men don't get breast cancer?",
-      answer: false,
-      type: "myth",
-      explanation: "About 1% of breast cancer cases occur in men. They have the same symptoms and need the same awareness as women.",
-      category: "Gender"
-    },
-    {
-      id: 9,
-      question: "Breast cancer is a death sentence?",
-      answer: false,
-      type: "myth",
-      explanation: "90% survival rate when caught early. Stage 1 breast cancer has a 99% survival rate. Early detection saves lives!",
-      category: "Treatment"
-    },
-    {
-      id: 10,
-      question: "Wearing tight bras causes breast cancer?",
-      answer: false,
-      type: "myth",
-      explanation: "There is no scientific evidence linking bra type or tightness to breast cancer risk. This is a persistent myth.",
-      category: "Lifestyle"
-    },
-    {
-      id: 11,
-      question: "Self-examination replaces mammogram screening?",
-      answer: false,
-      type: "myth",
-      explanation: "Self-exam finds only 70% of cancers and misses deep cancers. BOTH self-exam AND mammogram screening are needed together.",
-      category: "Screening"
-    },
-    {
-      id: 12,
-      question: "Breastfeeding prevents cancer completely?",
-      answer: false,
-      type: "myth",
-      explanation: "Breastfeeding reduces risk by only 4-5%, it doesn't eliminate cancer risk. Regular screening is still essential.",
-      category: "Prevention"
-    },
-    {
-      id: 13,
-      question: "Antiperspirants cause breast cancer?",
-      answer: false,
-      type: "myth",
-      explanation: "No scientific evidence supports this claim. Aluminum absorption through skin is minimal and not linked to cancer.",
-      category: "Lifestyle"
-    },
-    {
-      id: 14,
-      question: "Sugar directly feeds cancer growth?",
-      answer: false,
-      type: "myth",
-      explanation: "All cells use sugar for energy. Dietary sugar doesn't directly CAUSE cancer, though healthy diet is always recommended.",
-      category: "Lifestyle"
-    },
-    {
-      id: 15,
-      question: "Abortion or contraception causes breast cancer?",
-      answer: false,
-      type: "myth",
-      explanation: "No causal link has been scientifically proven. Real risk factors are primarily hormonal, genetic, and lifestyle-related.",
-      category: "Lifestyle"
-    },
-    {
-      id: 16,
-      question: "Dense breasts mean high cancer risk?",
-      answer: false,
-      type: "myth",
-      explanation: "Dense breasts make cancer detection harder on mammograms, but don't necessarily mean higher cancer risk.",
-      category: "Screening"
-    },
-    {
-      id: 17,
-      question: "5 years cancer-free means completely cured?",
-      answer: false,
-      type: "myth",
-      explanation: "20% of recurrences happen after 5 years. Lifetime monitoring and follow-up care are still needed.",
-      category: "Treatment"
-    },
-    {
-      id: 18,
-      question: "Radiation therapy is too dangerous to use?",
-      answer: false,
-      type: "myth",
-      explanation: "Targeted radiation therapy saves lives and is precisely controlled. Side effects are manageable and temporary.",
-      category: "Treatment"
-    },
-    {
-      id: 19,
-      question: "Breast removal is the only treatment option?",
-      answer: false,
-      type: "myth",
-      explanation: "80% of early-stage cancers can be treated with breast conservation surgery. Complete removal isn't always necessary.",
-      category: "Treatment"
-    },
-    {
-      id: 20,
-      question: "Stress directly causes breast cancer?",
-      answer: false,
-      type: "myth",
-      explanation: "Stress can weaken immunity but is not a direct cause of cancer. Managing stress is good for overall health.",
-      category: "Lifestyle"
-    },
-    
-    // FACT QUESTIONS (10 total)
-    {
-      id: 21,
-      question: "Stage 1 breast cancer has 99% 5-year survival rate?",
-      answer: true,
-      type: "fact",
-      explanation: "When breast cancer is found at Stage 1 (localized, <2cm, no lymph nodes), modern treatment cures 99% of women. Regular self-exam + mammogram makes early detection possible.",
-      category: "Treatment"
-    },
-    {
-      id: 22,
-      question: "Self-exam finds 70% of breast lumps before doctor visits?",
-      answer: true,
-      type: "fact",
-      explanation: "70% of breast lumps are discovered by women themselves during monthly self-exams. Do it Day 7-10 of your cycle when breasts are least tender. Upper outer quadrant focus!",
-      category: "Prevention"
-    },
-    {
-      id: 23,
-      question: "50% breast cancer cases diagnosed before age 50?",
-      answer: true,
-      type: "fact",
-      explanation: "In India, 50% of breast cancer occurs in women under 50 - much younger than global average. Family history, early periods, late pregnancy increase young women's risk.",
-      category: "Age & Risk"
-    },
-    {
-      id: 24,
-      question: "85-90% breast cancers have NO family history?",
-      answer: true,
-      type: "fact",
-      explanation: "Only 10-15% cases are hereditary. 85-90% women with breast cancer had no family history. Age, hormones, lifestyle affect everyone regardless of genetics.",
-      category: "Genetics"
-    },
-    {
-      id: 25,
-      question: "Mammogram + ultrasound detects 95% early cancers?",
-      answer: true,
-      type: "fact",
-      explanation: "Young Indian women often have dense breasts where mammogram alone misses 20-30% cancers. Ultrasound + mammogram together = 95% detection rate for early stage.",
-      category: "Screening"
-    },
-    {
-      id: 26,
-      question: "Breastfeeding reduces risk by 4% per year breastfed?",
-      answer: true,
-      type: "fact",
-      explanation: "Each year of breastfeeding lowers lifetime breast cancer risk by 4.3%. Total 12+ months breastfeeding = significant protection. Natural prevention!",
-      category: "Prevention"
-    },
-    {
-      id: 27,
-      question: "1 new breast cancer diagnosis every 4 minutes in India?",
-      answer: true,
-      type: "fact",
-      explanation: "India sees 200,000+ new cases yearly = 1 woman diagnosed every 4 minutes. 70% late stage detection. YOUR awareness can change this statistic.",
-      category: "Statistics"
-    },
-    {
-      id: 28,
-      question: "50% breast cancers found in upper outer quadrant?",
-      answer: true,
-      type: "fact",
-      explanation: "50% of all breast cancers develop in upper outer quadrant (towards armpit). Self-exam this area specially using circular motion with 3 fingers.",
-      category: "Symptoms"
-    },
-    {
-      id: 29,
-      question: "90% overall survival with modern treatment?",
-      answer: true,
-      type: "fact",
-      explanation: "90% of breast cancer patients survive 5+ years with current treatments. Early detection + targeted therapy = dramatic improvement over past decades.",
-      category: "Treatment"
-    },
-    {
-      id: 30,
-      question: "Biopsy does NOT spread cancer?",
-      answer: true,
-      type: "fact",
-      explanation: "Common myth delays diagnosis. Needle biopsy is safe, accurate, and essential. 80-90% 'suspicious lumps' prove benign. Don't delay - get it done!",
-      category: "Treatment"
-    }
-  ];
+  // Get questions in current language
+  const allQuestions = mythVsFactQuestions[language] || mythVsFactQuestions.en;
 
   // Shuffle and select 10 random questions for each game
   const [questions, setQuestions] = useState([]);
@@ -358,48 +118,48 @@ const MythVsFactGame = ({ onBack, onClose }) => {
               className="flex items-center text-gray-600 hover:text-purple-600 transition-colors mr-4"
             >
               <ArrowLeft className="w-6 h-6 mr-2" />
-              Back to Games
+              {t('backToGames')}
             </button>
           </div>
 
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
-              ⚖️ Myth vs Fact
+              ⚖️ {tGame('mythVsFact', 'title')}
             </h1>
             <p className="text-xl text-gray-600">
-              Bust myths with rapid-fire quiz and become a Myth Buster!
+              {tGame('mythVsFact', 'subtitle')}
             </p>
           </div>
 
           {/* Game Info */}
           <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/50 mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Game Rules</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">{tGame('mythVsFact', 'gameRules')}</h2>
             
             <div className="grid md:grid-cols-2 gap-8">
               <div>
                 <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
                   <Zap className="w-5 h-5 text-yellow-500 mr-2" />
-                  How to Play
+                  {tGame('mythVsFact', 'howToPlay')}
                 </h3>
                 <ul className="space-y-2 text-gray-600">
-                  <li>• 10 questions from pool of 30</li>
-                  <li>• Mix of myths and facts</li>
-                  <li>• 15 seconds per question</li>
-                  <li>• Build streaks for bonus points</li>
-                  <li>• Different questions each game!</li>
+                  <li>• 10 {tGame('mythVsFact', 'questionsFromPool')}</li>
+                  <li>• {tGame('mythVsFact', 'mixOfMyths')}</li>
+                  <li>• 15 {tGame('mythVsFact', 'secondsPerQuestion')}</li>
+                  <li>• {tGame('mythVsFact', 'buildStreaks')}</li>
+                  <li>• {tGame('mythVsFact', 'differentQuestions')}</li>
                 </ul>
               </div>
               
               <div>
                 <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
                   <Award className="w-5 h-5 text-purple-500 mr-2" />
-                  Scoring System
+                  {tGame('mythVsFact', 'scoringSystem')}
                 </h3>
                 <ul className="space-y-2 text-gray-600">
-                  <li>• Base: 10 points per correct answer</li>
-                  <li>• Time bonus: +50% if answered in 10s</li>
-                  <li>• Streak bonus: +10% per consecutive correct</li>
-                  <li>• Perfect score: 200+ points</li>
+                  <li>• {tGame('mythVsFact', 'basePoints')}</li>
+                  <li>• {tGame('mythVsFact', 'timeBonusDesc')}</li>
+                  <li>• {tGame('mythVsFact', 'streakBonus')}</li>
+                  <li>• {tGame('mythVsFact', 'perfectScore')}</li>
                 </ul>
               </div>
             </div>
@@ -407,18 +167,18 @@ const MythVsFactGame = ({ onBack, onClose }) => {
 
           {/* Categories Preview */}
           <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/50 mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Question Categories</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">{tGame('mythVsFact', 'questionCategories')}</h2>
             <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
               {[
-                { name: 'Symptoms', emoji: '🔍' },
-                { name: 'Screening', emoji: '📋' },
-                { name: 'Treatment', emoji: '🏥' },
-                { name: 'Lifestyle', emoji: '🌱' },
-                { name: 'Prevention', emoji: '🛡️' },
-                { name: 'Genetics', emoji: '🧬' },
-                { name: 'Age & Risk', emoji: '🎂' },
-                { name: 'Gender', emoji: '👥' },
-                { name: 'Statistics', emoji: '📊' }
+                { name: tGame('mythVsFact', 'symptoms'), emoji: '🔍' },
+                { name: tGame('mythVsFact', 'screening'), emoji: '📋' },
+                { name: tGame('mythVsFact', 'treatment'), emoji: '🏥' },
+                { name: tGame('mythVsFact', 'lifestyle'), emoji: '🌱' },
+                { name: tGame('mythVsFact', 'prevention'), emoji: '🛡️' },
+                { name: tGame('mythVsFact', 'genetics'), emoji: '🧬' },
+                { name: tGame('mythVsFact', 'ageRisk'), emoji: '🎂' },
+                { name: tGame('mythVsFact', 'gender'), emoji: '👥' },
+                { name: tGame('mythVsFact', 'statistics'), emoji: '📊' }
               ].map((category, index) => (
                 <div key={index} className="text-center p-4 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl">
                   <div className="text-2xl mb-2">{category.emoji}</div>
@@ -434,7 +194,7 @@ const MythVsFactGame = ({ onBack, onClose }) => {
               onClick={startGame}
               className="px-12 py-4 bg-gradient-to-r from-purple-500 to-pink-600 text-white text-xl font-bold rounded-2xl shadow-lg hover:scale-105 transition-all duration-300"
             >
-              Start Quiz 🚀
+              {t('startQuiz')} 🚀
             </button>
           </div>
         </div>
@@ -464,7 +224,7 @@ const MythVsFactGame = ({ onBack, onClose }) => {
               {streak > 0 && (
                 <div className="flex items-center bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-xl px-4 py-2 shadow-lg">
                   <Zap className="w-5 h-5 mr-2" />
-                  <span className="font-bold">{streak} streak!</span>
+                  <span className="font-bold">{streak} {tGame('mythVsFact', 'streak')}</span>
                 </div>
               )}
             </div>
@@ -477,13 +237,13 @@ const MythVsFactGame = ({ onBack, onClose }) => {
                 onClick={() => setGameState('results')}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold"
               >
-                Submit Quiz
+                {t('submitQuiz')}
               </button>
               <button
                 onClick={onBack}
                 className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-semibold"
               >
-                Back to Games
+                {t('backToGames')}
               </button>
             </div>
           </div>
@@ -525,8 +285,8 @@ const MythVsFactGame = ({ onBack, onClose }) => {
                 }`}
               >
                 <div className="text-4xl mb-4">❌</div>
-                <div className="text-xl font-bold">MYTH</div>
-                <div className="text-sm mt-2">This statement is FALSE</div>
+                <div className="text-xl font-bold">{tGame('mythVsFact', 'myth')}</div>
+                <div className="text-sm mt-2">{tGame('mythVsFact', 'mythDesc')}</div>
               </button>
 
               <button
@@ -545,8 +305,8 @@ const MythVsFactGame = ({ onBack, onClose }) => {
                 }`}
               >
                 <div className="text-4xl mb-4">✅</div>
-                <div className="text-xl font-bold">FACT</div>
-                <div className="text-sm mt-2">This statement is TRUE</div>
+                <div className="text-xl font-bold">{tGame('mythVsFact', 'fact')}</div>
+                <div className="text-sm mt-2">{tGame('mythVsFact', 'factDesc')}</div>
               </button>
             </div>
 
@@ -560,7 +320,7 @@ const MythVsFactGame = ({ onBack, onClose }) => {
                     <XCircle className="w-6 h-6 text-red-500 mr-2" />
                   )}
                   <span className="font-bold text-gray-900">
-                    {selectedAnswer === currentQ.answer ? 'Correct!' : 'Incorrect!'}
+                    {selectedAnswer === currentQ.answer ? tGame('mythVsFact', 'correct') : tGame('mythVsFact', 'incorrect')}
                   </span>
                 </div>
                 <p className="text-gray-700">{currentQ.explanation}</p>
@@ -602,19 +362,19 @@ const MythVsFactGame = ({ onBack, onClose }) => {
             <div className="grid md:grid-cols-4 gap-6 text-center">
               <div>
                 <div className="text-3xl font-bold text-purple-600">{score}</div>
-                <div className="text-gray-600">Final Score</div>
+                <div className="text-gray-600">{tGame('mythVsFact', 'finalScore')}</div>
               </div>
               <div>
                 <div className="text-3xl font-bold text-green-600">{correctAnswers}/{questions.length}</div>
-                <div className="text-gray-600">Correct</div>
+                <div className="text-gray-600">{tGame('mythVsFact', 'correctAnswers')}</div>
               </div>
               <div>
                 <div className="text-3xl font-bold text-orange-600">{maxStreak}</div>
-                <div className="text-gray-600">Best Streak</div>
+                <div className="text-gray-600">{tGame('mythVsFact', 'bestStreak')}</div>
               </div>
               <div>
                 <div className="text-3xl font-bold text-pink-600">{percentage}%</div>
-                <div className="text-gray-600">Accuracy</div>
+                <div className="text-gray-600">{t('accuracy')}</div>
               </div>
             </div>
           </div>
@@ -624,9 +384,9 @@ const MythVsFactGame = ({ onBack, onClose }) => {
             <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-3xl p-8 shadow-xl border border-yellow-200 mb-8">
               <div className="text-center">
                 <Award className="w-16 h-16 text-yellow-600 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Badge Earned!</h2>
-                <div className="text-xl font-semibold text-gray-800">Myth Buster 🛡️</div>
-                <p className="text-gray-600 mt-2">You've mastered breast health facts and busted the myths!</p>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('badgeEarned')}</h2>
+                <div className="text-xl font-semibold text-gray-800">{tGame('mythVsFact', 'mythBusterBadge')} 🛡️</div>
+                <p className="text-gray-600 mt-2">{tGame('mythVsFact', 'mythBusterDesc')}</p>
               </div>
             </div>
           )}
@@ -638,14 +398,14 @@ const MythVsFactGame = ({ onBack, onClose }) => {
               className="flex items-center px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-semibold rounded-xl shadow-lg hover:scale-105 transition-all duration-300"
             >
               <RefreshCw className="w-5 h-5 mr-2" />
-              Play Again
+              {t('playAgain')}
             </button>
             <button
               onClick={onBack}
               className="flex items-center px-6 py-3 bg-gray-600 text-white font-semibold rounded-xl shadow-lg hover:bg-gray-700 transition-colors"
             >
               <Home className="w-5 h-5 mr-2" />
-              Back to Games
+              {t('backToGames')}
             </button>
           </div>
         </div>

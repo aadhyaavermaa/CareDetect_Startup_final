@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Trophy, Star, Eye, Shield, Target, Award, Play, Lock, ArrowLeft } from 'lucide-react';
 import SpotTheSignGame from './SpotTheSignGame';
 import MythVsFactGame from './MythVsFactGame';
+import LanguageSelector from '../LanguageSelector';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const GameHub = ({ onClose }) => {
+  const { t } = useLanguage();
   const [selectedGame, setSelectedGame] = useState(null);
   const [userStats, setUserStats] = useState({
     totalPoints: 1250,
@@ -16,10 +19,10 @@ const GameHub = ({ onClose }) => {
   const games = [
     {
       id: 'spot-the-sign',
-      title: 'Spot The Sign',
+      title: t('spotTheSign'),
       icon: Eye,
       emoji: '🕵️‍♀️',
-      description: 'Find unusual changes in breast images',
+      description: t('spotTheSignDesc'),
       difficulty: 'Easy to Hard',
       points: '50-150 pts',
       badge: 'Eagle Eye Detective 🦅',
@@ -29,10 +32,10 @@ const GameHub = ({ onClose }) => {
     },
     {
       id: 'myth-vs-fact',
-      title: 'Myth vs Fact',
+      title: t('mythVsFact'),
       icon: Shield,
       emoji: '⚖️',
-      description: 'Bust myths with rapid-fire quiz',
+      description: t('mythVsFactDesc'),
       difficulty: '10 Questions',
       points: '100-200 pts',
       badge: 'Myth Buster 🛡️',
@@ -42,11 +45,11 @@ const GameHub = ({ onClose }) => {
     },
     {
       id: 'coming-soon',
-      title: 'Risk Assessment',
+      title: t('riskAssessment'),
       icon: Target,
       emoji: '🎯',
-      description: 'Interactive risk calculator game',
-      difficulty: 'Coming Soon',
+      description: t('riskAssessmentDesc'),
+      difficulty: t('comingSoon'),
       points: '??? pts',
       badge: 'Risk Master 📊',
       color: 'from-gray-400 to-gray-500',
@@ -70,43 +73,44 @@ const GameHub = ({ onClose }) => {
         {/* Header */}
         <div className="text-center mb-8">
           {/* Back Button */}
-          <div className="flex justify-start mb-6">
+          <div className="flex justify-between items-center mb-6">
             <button
               onClick={onClose}
               className="flex items-center text-gray-600 hover:text-pink-600 transition-colors bg-white/80 backdrop-blur-sm rounded-xl px-4 py-2 shadow-lg border border-pink-100"
             >
               <ArrowLeft className="w-5 h-5 mr-2" />
-              Back to Home
+              {t('backToHome')}
             </button>
+            <LanguageSelector />
           </div>
           
           <div className="flex items-center justify-center mb-4">
             <Trophy className="w-12 h-12 text-yellow-500 mr-3" />
             <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-              Breast Health Hero Challenge
+              {t('gameHubTitle')}
             </h1>
           </div>
           <p className="text-xl text-gray-600 mb-6">
-            Play fun games, earn badges, and become a breast health expert!
+            {t('gameHubSubtitle')}
           </p>
           
           {/* Stats Bar */}
           <div className="flex justify-center items-center space-x-8 bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-pink-100">
             <div className="text-center">
               <div className="text-2xl font-bold text-pink-600">{userStats.totalPoints}</div>
-              <div className="text-sm text-gray-600">Points</div>
+              <div className="text-sm text-gray-600">{t('points')}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-600">{userStats.badges}/{userStats.totalBadges}</div>
-              <div className="text-sm text-gray-600">Badges</div>
+              <div className="text-sm text-gray-600">{t('badges')}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-indigo-600">{userStats.gamesPlayed}</div>
-              <div className="text-sm text-gray-600">Games Played</div>
+              <div className="text-sm text-gray-600">{t('gamesPlayed')}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-orange-600">{userStats.streak}</div>
-              <div className="text-sm text-gray-600">Day Streak</div>
+              <div className="text-sm text-gray-600">{t('dayStreak')}</div>
             </div>
           </div>
         </div>
@@ -150,18 +154,18 @@ const GameHub = ({ onClose }) => {
                   
                   <div className="space-y-2 mb-4">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Difficulty:</span>
+                      <span className="text-gray-500">{t('difficulty')}:</span>
                       <span className="font-semibold text-gray-700">{game.difficulty}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Reward:</span>
+                      <span className="text-gray-500">{t('reward')}:</span>
                       <span className="font-semibold text-green-600">{game.points}</span>
                     </div>
                   </div>
 
                   {/* Badge */}
                   <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl p-3 mb-4">
-                    <div className="text-xs text-gray-600 mb-1">Badge to Unlock:</div>
+                    <div className="text-xs text-gray-600 mb-1">{t('badgeToUnlock')}:</div>
                     <div className="font-semibold text-gray-800">{game.badge}</div>
                   </div>
 
@@ -177,12 +181,12 @@ const GameHub = ({ onClose }) => {
                     {game.unlocked && game.id !== 'coming-soon' ? (
                       <>
                         <Play className="w-5 h-5 mr-2" />
-                        Play Now
+                        {t('playNow')}
                       </>
                     ) : (
                       <>
                         <Lock className="w-5 h-5 mr-2" />
-                        {game.id === 'coming-soon' ? 'Coming Soon' : 'Locked'}
+                        {game.id === 'coming-soon' ? t('comingSoon') : t('locked')}
                       </>
                     )}
                   </button>
@@ -194,14 +198,14 @@ const GameHub = ({ onClose }) => {
 
         {/* Achievement Showcase */}
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/50">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">🏆 Your Achievements</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">🏆 {t('yourAchievements')}</h2>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {[
-              { name: 'First Steps', emoji: '👶', unlocked: true },
-              { name: 'Eagle Eye', emoji: '🦅', unlocked: true },
-              { name: 'Myth Buster', emoji: '🛡️', unlocked: true },
-              { name: 'Streak Master', emoji: '🔥', unlocked: false },
-              { name: 'Health Hero', emoji: '🦸‍♀️', unlocked: false }
+              { name: t('firstSteps'), emoji: '👶', unlocked: true },
+              { name: t('eagleEye'), emoji: '🦅', unlocked: true },
+              { name: t('mythBuster'), emoji: '🛡️', unlocked: true },
+              { name: t('streakMaster'), emoji: '🔥', unlocked: false },
+              { name: t('healthHero'), emoji: '🦸‍♀️', unlocked: false }
             ].map((badge, index) => (
               <div
                 key={index}
