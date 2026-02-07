@@ -4,8 +4,9 @@ import {
   LogOut, Settings, Heart, Shield, TrendingUp, Clock, Award, 
   BarChart3, Target, Bell, Download, Plus, Eye, AlertTriangle, 
   CheckCircle, XCircle, Flame, Users, MapPin, Phone, Mail, 
-  ChevronLeft, ChevronRight, Filter, Search, ExternalLink
+  ChevronLeft, ChevronRight, Filter, Search, ExternalLink, MessageSquare
 } from 'lucide-react';
+import FeedbackForm from './FeedbackForm';
 
 const Dashboard = ({ onClose, onLogout, user }) => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -344,6 +345,7 @@ const Dashboard = ({ onClose, onLogout, user }) => {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'screenings', label: 'Screenings', icon: Activity },
+    { id: 'feedback', label: 'Feedback', icon: MessageSquare },
     { id: 'calendar', label: 'Calendar', icon: Calendar },
     { id: 'profile', label: 'Profile', icon: User }
   ];
@@ -755,6 +757,10 @@ const Dashboard = ({ onClose, onLogout, user }) => {
               </div>
             </div>
           </div>
+        )}
+
+        {activeTab === 'feedback' && (
+          <FeedbackForm />
         )}
 
         {activeTab === 'calendar' && (
